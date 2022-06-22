@@ -20,6 +20,7 @@
        "baseUrl": "src",
        "paths": {
           "@/*": ["*"],
+          "models/*": ["models/*"],
        },
        "declarationDir": "types",
        "allowSyntheticDefaultImports": true,

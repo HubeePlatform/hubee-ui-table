@@ -1,1 +1,1 @@
-export { default as BasicTable } from './TableCore';
+export * from './material/index';
