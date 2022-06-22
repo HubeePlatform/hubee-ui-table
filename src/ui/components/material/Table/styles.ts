@@ -11,6 +11,7 @@ export const ContainerRoot = styled.div`
 `;
 
 export const ContainerTable = styled.div`
+    position: relative;
     display: inline-table;
     width: 100%;
 
