@@ -4,6 +4,7 @@ import { MaterialTable } from '@/ui/components/material';
 import TableSearchStorybook from '../utils/table-search-storybook';
 import StoryGroupTypes from '../utils/story-group-types';
 import RowActionStorybook from '../utils/row-action-storybook';
+import { Sizing } from '@/core/models/common';
 
 export default {
     title: StoryGroupTypes.MATERIAL_TABLE,
@@ -13,10 +14,12 @@ export default {
 const TemplateWithActions: ComponentStory<typeof MaterialTable> = () => (
     <MaterialTable
         service={new TableSearchStorybook()}
-        rowsPerPage={5}
-        enableRowActions
-        actions={RowActionStorybook.makeActions()}
+        rowOptions={{
+            enableRowActions: true,
+            rowActions: RowActionStorybook.makeActions(),
+        }}
+        styleOptions={{ withContainerBorderSizing: Sizing.SMALL }}
     />
 );
 
-export const WithActions = TemplateWithActions.bind({});
+export const WithRowActions = TemplateWithActions.bind({});

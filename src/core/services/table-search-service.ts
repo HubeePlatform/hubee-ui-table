@@ -4,12 +4,32 @@ import {
     ColumnModel,
     PaginationModel,
 } from '@/core/models';
-import { ITableSearchService } from '@/core/interfaces';
+import {
+    ITableSearchService,
+    TableProps,
+    TableRowOptions,
+} from '@/core/interfaces';
 import { StringHelper } from '../helpers';
+import _ from 'lodash';
 
 export default abstract class TableSearchService
     implements ITableSearchService
 {
+    tableProps: TableProps;
+
+    verifyDisableRowSelected(data: any): boolean {
+        const { propertyNameForDisableRow } = this.tableProps
+            .rowOptions as TableRowOptions;
+
+        if (
+            _.isEmpty(propertyNameForDisableRow) ||
+            _.isUndefined(propertyNameForDisableRow)
+        )
+            return false;
+
+        return data[propertyNameForDisableRow];
+    }
+
     abstract search<T>(
         searchModel: SearchModel,
     ): Promise<SearchResponseModel<T>>;
@@ -18,6 +38,10 @@ export default abstract class TableSearchService
     abstract makeLabelDisplayedResult(
         response: SearchResponseModel<any>,
     ): string;
+
+    setTableProps(tableProps: TableProps) {
+        this.tableProps = tableProps;
+    }
 
     makeCriteriaToUrl(searchModel: SearchModel): string {
         const { endpoint, criterias, orderBy, pagination } = searchModel;
@@ -33,7 +57,7 @@ export default abstract class TableSearchService
         );
     }
 
-    makeSearchClientSide(
+    makeSearchResponseClientSide(
         values: any[],
         searchModel: SearchModel,
     ): SearchResponseModel<any> {

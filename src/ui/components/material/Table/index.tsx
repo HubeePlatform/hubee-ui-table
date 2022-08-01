@@ -1,10 +1,27 @@
+/* eslint-disable react/prop-types */
 import React, { useEffect, useRef, useState } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import MaUTable from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
-import { useTable, Column, useSortBy } from 'react-table';
-import { ColumnService } from '@/core/services';
-import { TableProps } from '@/core/interfaces';
+import {
+    useTable,
+    Column,
+    useSortBy,
+    useRowSelect,
+    usePagination,
+    Row,
+} from 'react-table';
+import { ColumnService, EventService } from '@/core/services';
+import {
+    PaginationOptionsDefault,
+    RowOptionsDefault,
+    StyleOptionsDefault,
+    TablePaginationOptions,
+    TableProps,
+    TablePropsDefault,
+    TableRowOptions,
+    TableStyleOptions,
+} from '@/core/interfaces';
 import { TableFooter, TableHead } from '@mui/material';
 import {
     Pagination,
@@ -25,26 +42,35 @@ import {
     ContainerFilter,
     ContainerPaginationHeader,
 } from './styles';
+import IndeterminateCheckbox from '../TableCellSelect';
+import { EventKey } from '@/core/models/event';
+import TableRowSelectHelper from '@/core/helpers/table-row-select-helper';
+import _ from 'lodash';
 
 export default function MaterialTable(props: TableProps) {
+    const tableProps = TablePropsDefault(props);
+
+    const { service, GlobalFilterComponent, rowOptions } = tableProps;
+    service.setTableProps(tableProps);
+
     const {
-        service,
-        rowsPerPage,
-        GlobalFilterComponent,
         enableRowActions,
-        actions,
-        rowsPerPageOptions,
-    } = props;
+        enableRowSelected,
+        defaultSelectedRowIds,
+        propertyNameForDefaultRowSelected,
+    } = tableProps.rowOptions as TableRowOptions;
 
-    const { withContainerBorder, withPaginationAtTop, withTableInfoResult } =
-        props;
+    const {
+        withContainerBorder,
+        withContainerBorderSizing,
+        withZebraStriped,
+        withTableInfoResult,
+    } = tableProps.styleOptions as TableStyleOptions;
 
-    const isInitialMount = useRef(true);
+    const { rowsPerPage, withPaginationAtTop, rowsPerPageOptions } =
+        tableProps.paginationOptions as TablePaginationOptions;
 
-    const [requestState, setRequestState] = useState({
-        pageIndex: 0,
-        rowsPerPage: rowsPerPage,
-    });
+    const initialMount = useRef(true);
 
     const [responseState, setResponseState] = useState({
         isLoading: true,
@@ -52,10 +78,20 @@ export default function MaterialTable(props: TableProps) {
         value: SearchResponseModel.makeEmpty(),
     });
 
+    const [controlRowSelectedState, setControlRowSelectedState] = useState({
+        active: !_.isEmpty(propertyNameForDefaultRowSelected),
+        enableDispatchSelectedRowsEvent: true,
+        visualizedRows: [] as any[],
+    });
+
     const columns = React.useMemo<Column<any>[]>(
         () => ColumnService.makeModelToColumn(service.makeColumns()),
         [],
     );
+
+    const getRowId = React.useCallback(row => {
+        return row.id;
+    }, []);
 
     const initialSearchModel = React.useMemo<SearchModel>(
         () => service.makeSearchModel(),
@@ -67,10 +103,17 @@ export default function MaterialTable(props: TableProps) {
         headerGroups,
         rows,
         prepareRow,
-        state: { sortBy },
+        gotoPage,
+        setPageSize,
+        selectedFlatRows,
+        toggleRowSelected,
+        state: { pageIndex, pageSize, sortBy, selectedRowIds },
     } = useTable(
         {
             initialState: {
+                pageIndex: 0,
+                pageSize: rowsPerPage,
+                selectedRowIds: defaultSelectedRowIds,
                 sortBy: [
                     {
                         id: initialSearchModel.orderBy.defaultField,
@@ -79,14 +122,64 @@ export default function MaterialTable(props: TableProps) {
                 ],
             },
             columns,
+            getRowId,
             data: responseState.value.data,
             autoResetSortBy: false,
             autoResetExpanded: false,
+            autoResetSelectedRows: false,
             autoResetPage: false,
             manualSortBy: true,
             disableResizing: true,
         },
         useSortBy,
+        usePagination,
+        useRowSelect,
+        hooks => {
+            hooks.visibleColumns.push(columns =>
+                !enableRowSelected
+                    ? columns
+                    : [
+                          {
+                              id: 'selection',
+                              Header: props => {
+                                  const checkboxProps =
+                                      TableRowSelectHelper.getConditionalSelectHeader(
+                                          {
+                                              headerProps: props,
+                                              shouldSelectPage: true,
+                                              checkIfRowIsSelectable: row =>
+                                                  !service.verifyDisableRowSelected(
+                                                      row.original,
+                                                  ),
+                                          },
+                                      );
+
+                                  return (
+                                      <div>
+                                          <IndeterminateCheckbox
+                                              isHeader={true}
+                                              service={service}
+                                              {...checkboxProps}
+                                          />
+                                      </div>
+                                  );
+                              },
+                              width: '2%',
+                              Cell: ({ row }) => (
+                                  <div>
+                                      <IndeterminateCheckbox
+                                          isHeader={false}
+                                          row={row}
+                                          service={service}
+                                          {...row.getToggleRowSelectedProps()}
+                                      />
+                                  </div>
+                              ),
+                          },
+                          ...columns,
+                      ],
+            );
+        },
     );
 
     const getCurrentSearchModel = (): SearchModel => {
@@ -95,12 +188,43 @@ export default function MaterialTable(props: TableProps) {
             responseState.search,
         );
 
-        searchModel.updatePagination(
-            requestState.pageIndex,
-            requestState.rowsPerPage as number,
-        );
+        searchModel.updatePagination(pageIndex, pageSize as number);
 
         return searchModel;
+    };
+
+    const controlRowSelectedDefaultValue = (responseData: any[]) => {
+        if (controlRowSelectedState.active && !_.isEmpty(responseData)) {
+            const values = responseData;
+            const visualizedRows = [...controlRowSelectedState.visualizedRows];
+
+            const propertyName = propertyNameForDefaultRowSelected as string;
+
+            const filterRow = (item: any) =>
+                visualizedRows.findIndex(id => id === item.id) === -1 &&
+                item[propertyName] === true;
+
+            values.filter(filterRow).map((x: any) => {
+                toggleRowSelected(x.id, x[propertyName] as boolean);
+            });
+
+            const newRows = values
+                .filter(
+                    value =>
+                        visualizedRows.findIndex(id => id === value.id) === -1,
+                )
+                .map(x => x.id);
+
+            const updateVisualizedRows = visualizedRows.concat(newRows);
+
+            setControlRowSelectedState({
+                ...controlRowSelectedState,
+                visualizedRows: updateVisualizedRows,
+                enableDispatchSelectedRowsEvent: true,
+            });
+
+            toggleRowSelected('-999', false);
+        }
     };
 
     const requestSearch = (searchModel: SearchModel) => {
@@ -109,6 +233,13 @@ export default function MaterialTable(props: TableProps) {
             isLoading: true,
         });
 
+        if (controlRowSelectedState.active) {
+            setControlRowSelectedState({
+                ...controlRowSelectedState,
+                enableDispatchSelectedRowsEvent: false,
+            });
+        }
+
         service.search<any>(searchModel).then(response => {
             setResponseState({
                 ...responseState,
@@ -116,24 +247,19 @@ export default function MaterialTable(props: TableProps) {
                 search: searchModel,
                 isLoading: false,
             });
+
+            controlRowSelectedDefaultValue(response.data);
         });
     };
 
     const handleOnChangePage = (event: any, newPage: number) => {
-        setRequestState({
-            ...requestState,
-            pageIndex: newPage,
-        });
+        gotoPage(newPage);
     };
 
     const handleOnChangeRowsPerPage = (
         event: React.ChangeEvent<HTMLInputElement>,
     ) => {
-        setRequestState({
-            ...requestState,
-            pageIndex: 0,
-            rowsPerPage: Number(`${event.target.value}`),
-        });
+        setPageSize(Number(`${event.target.value}`));
     };
 
     const handleOnChangeQuery = (criterias: SearchCriteriaModel[]) => {
@@ -143,6 +269,15 @@ export default function MaterialTable(props: TableProps) {
         requestSearch(searchModel);
     };
 
+    const isInitialMount = () => {
+        if (initialMount.current) {
+            initialMount.current = false;
+            return true;
+        }
+
+        return false;
+    };
+
     useEffect(() => {
         const searchModel = getCurrentSearchModel();
         searchModel.updateSearchCriteria(initialSearchModel.criterias);
@@ -150,26 +285,29 @@ export default function MaterialTable(props: TableProps) {
     }, []);
 
     useEffect(() => {
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-            return;
-        }
+        if (isInitialMount()) return;
 
         const searchModel = getCurrentSearchModel();
         requestSearch(searchModel);
-    }, [requestState.pageIndex, requestState.rowsPerPage]);
+    }, [pageIndex, pageSize]);
 
     useEffect(() => {
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-            return;
-        }
+        if (isInitialMount()) return;
+
         const searchModel = getCurrentSearchModel();
         if (!searchModel.hasChangeOrderBy(sortBy[0])) return;
 
         searchModel.updateOrderBy(sortBy[0]);
         requestSearch(searchModel);
     }, [sortBy]);
+
+    useEffect(() => {
+        if (isInitialMount()) return;
+        if (!enableRowSelected) return;
+        if (!controlRowSelectedState.enableDispatchSelectedRowsEvent) return;
+
+        EventService.dispatchSelectedRowsEvent(selectedFlatRows);
+    }, [selectedRowIds]);
 
     return (
         <ContainerRoot>
@@ -180,26 +318,34 @@ export default function MaterialTable(props: TableProps) {
                     />
                 </ContainerFilter>
             )}
-            <ContainerTable className={`with-border-${withContainerBorder}`}>
-                <ContainerPaginationHeader>
-                    {withTableInfoResult && (
-                        <TableInfoResult
-                            labelDisplayedResult={service.makeLabelDisplayedResult(
-                                responseState.value,
-                            )}
-                        />
-                    )}
-                    {withPaginationAtTop && (
-                        <Pagination
-                            page={requestState.pageIndex}
-                            rowsPerPage={requestState.rowsPerPage as number}
-                            rowsPerPageOptions={rowsPerPageOptions as number[]}
-                            count={responseState.value.page.total}
-                            onPageChange={handleOnChangePage}
-                            onRowsPerPageChange={handleOnChangeRowsPerPage}
-                        />
-                    )}
-                </ContainerPaginationHeader>
+            <ContainerTable
+                data-border={withContainerBorder}
+                data-border-sizing={withContainerBorderSizing}
+                data-zebra-striped={withZebraStriped}
+            >
+                {(withPaginationAtTop || withTableInfoResult) && (
+                    <ContainerPaginationHeader>
+                        {withTableInfoResult && (
+                            <TableInfoResult
+                                labelDisplayedResult={service.makeLabelDisplayedResult(
+                                    responseState.value,
+                                )}
+                            />
+                        )}
+                        {withPaginationAtTop && (
+                            <Pagination
+                                page={pageIndex}
+                                rowsPerPage={pageSize as number}
+                                rowsPerPageOptions={
+                                    rowsPerPageOptions as number[]
+                                }
+                                count={responseState.value.page.total}
+                                onPageChange={handleOnChangePage}
+                                onRowsPerPageChange={handleOnChangeRowsPerPage}
+                            />
+                        )}
+                    </ContainerPaginationHeader>
+                )}
                 <CssBaseline />
                 <MaUTable
                     {...getTableProps()}
@@ -212,21 +358,21 @@ export default function MaterialTable(props: TableProps) {
                         />
                     </TableHead>
                     <TableBodyOperations
-                        count={responseState.value.page.total}
+                        rowsPerPage={pageSize}
                         isLoading={responseState.isLoading}
-                        rowsPerPage={requestState.rowsPerPage as number}
+                        count={responseState.value.page.total}
                     />
                     <TableBody className="material-table-body">
                         <BodyMapRow
                             rows={rows}
                             prepareRow={prepareRow}
-                            actions={actions}
+                            rowOptions={RowOptionsDefault(rowOptions)}
                         />
                     </TableBody>
                     <TableFooter>
                         <Pagination
-                            page={requestState.pageIndex}
-                            rowsPerPage={requestState.rowsPerPage as number}
+                            page={pageIndex}
+                            rowsPerPage={pageSize as number}
                             rowsPerPageOptions={rowsPerPageOptions as number[]}
                             count={responseState.value.page.total}
                             onPageChange={handleOnChangePage}
@@ -240,12 +386,8 @@ export default function MaterialTable(props: TableProps) {
 }
 
 MaterialTable.defaultProps = {
-    rowsPerPage: 10,
-    enableRowActions: false,
     GlobalFilterComponent: undefined,
-    actions: [],
-    withContainerBorder: true,
-    withPaginationAtTop: true,
-    withTableInfoResult: true,
-    rowsPerPageOptions: [5, 10, 25, 30],
+    rowOptions: RowOptionsDefault(),
+    styleOptions: StyleOptionsDefault(),
+    paginationOptions: PaginationOptionsDefault(),
 };

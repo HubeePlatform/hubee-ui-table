@@ -15,12 +15,33 @@ export const ContainerTable = styled.div`
     display: inline-table;
     width: 100%;
 
-    &.with-border-true {
+    &&[data-zebra-striped='true'] {
+        tbody {
+            tr:nth-child(odd) {
+                background-color: #f4f4f4;
+            }
+        }
+    }
+
+    &&[data-border='true'] {
         min-height: 500px;
         padding-left: 16px;
         padding-right: 16px;
-        padding-bottom: 140px;
         border: 1px solid #cccccc;
+    }
+
+    &&[data-border-sizing='small'] {
+        padding-bottom: 20px;
+    }
+
+    &&[data-border-sizing='medium'] {
+        padding-bottom: 140px;
+    }
+
+    input[type='checkbox'].table-cell-select {
+        accent-color: #1580ae;
+        height: 18px;
+        width: 18px;
     }
 
     .material-table-head {
@@ -107,6 +128,7 @@ export const ContainerFilter = styled.div`
 
 export const ContainerPaginationHeader = styled(ContainerBase)`
     &.MuiContainer-root {
+        height: 52px;
         margin: 0;
         padding: 0;
         display: flex;

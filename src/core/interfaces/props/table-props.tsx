@@ -1,17 +1,28 @@
+import { IGlobalFilterComponent, ITableSearchService } from '@/core/interfaces';
 import {
-    Action,
-    IGlobalFilterComponent,
-    ITableSearchService,
-} from '@/core/interfaces';
+    PaginationOptionsDefault,
+    TablePaginationOptions,
+} from './table-pagination-options-props';
+import { RowOptionsDefault, TableRowOptions } from './table-row-options-props';
+import {
+    StyleOptionsDefault,
+    TableStyleOptions,
+} from './table-style-options-props';
 
-export default interface TableProps {
+export interface TableProps {
     service: ITableSearchService;
-    rowsPerPage?: number;
-    enableRowActions?: boolean;
     GlobalFilterComponent?: IGlobalFilterComponent;
-    actions?: Action<any>[];
-    withContainerBorder?: boolean;
-    withPaginationAtTop?: boolean;
-    withTableInfoResult?: boolean;
-    rowsPerPageOptions?: number[];
+    paginationOptions?: TablePaginationOptions;
+    styleOptions?: TableStyleOptions;
+    rowOptions?: TableRowOptions;
 }
+
+export const TablePropsDefault = (props: TableProps) => {
+    return {
+        service: props.service,
+        GlobalFilterComponent: props.GlobalFilterComponent,
+        paginationOptions: PaginationOptionsDefault(props.paginationOptions),
+        rowOptions: RowOptionsDefault(props.rowOptions),
+        styleOptions: StyleOptionsDefault(props.styleOptions),
+    } as TableProps;
+};

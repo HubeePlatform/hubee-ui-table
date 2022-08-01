@@ -12,6 +12,16 @@ import { MakeDataHelper, StringHelper } from '@/core/helpers';
 import React from 'react';
 
 export default class TableSearchStorybook extends TableSearchService {
+    constructor() {
+        super();
+        TableSearchService.call(this);
+
+        //sample
+        // this.verifyDisableRowSelected = function (data: any): boolean {
+        //     return false;
+        // };
+    }
+
     makeLabelDisplayedResult(response: SearchResponseModel<any>): string {
         if (response === undefined) return '';
         if (response.page === undefined || response.page.total === 0) return '';
@@ -44,17 +54,21 @@ export default class TableSearchStorybook extends TableSearchService {
             return arr;
         };
 
-        const newPerson = (): PersonTestModel => {
+        const newPerson = (index: any): PersonTestModel => {
             const statusChance = Math.random();
             return {
-                id: Math.floor(Math.random() * 30),
-                firstName: MakeDataHelper.makeName(),
-                lastName: MakeDataHelper.makeName(),
-                age: Math.floor(Math.random() * 30),
-                visits: Math.floor(Math.random() * 100),
-                progress: Math.floor(Math.random() * 100),
+                id: index === 0 ? 1 : Math.floor(Math.random() * 30),
+                rowDisabled: index === 0 ? true : false,
+                isSelectedValue: index === 0 || index === 2 ? true : false,
+                firstName: index === 0 ? ' Miranda' : MakeDataHelper.makeName(),
+                lastName: index === 0 ? 'Assis' : MakeDataHelper.makeName(),
+                age: index === 0 ? 29 : Math.floor(Math.random() * 30),
+                visits: index === 0 ? 2 : Math.floor(Math.random() * 100),
+                progress: index === 0 ? 4 : Math.floor(Math.random() * 100),
                 status:
-                    statusChance > 0.66
+                    index === 0
+                        ? 'relationship'
+                        : statusChance > 0.66
                         ? 'relationship'
                         : statusChance > 0.33
                         ? 'complicated'
@@ -63,12 +77,12 @@ export default class TableSearchStorybook extends TableSearchService {
         };
 
         const makeDataLevel = (depth = 0): any => {
-            const lens = [0];
+            const lens = [10];
             const len = lens[depth];
 
-            const data = range(len).map((d: any) => {
+            const data = range(len).map((d: any, index) => {
                 return {
-                    ...newPerson(),
+                    ...newPerson(index),
                     subRows: lens[depth + 1]
                         ? makeDataLevel(depth + 1)
                         : undefined,
@@ -83,7 +97,7 @@ export default class TableSearchStorybook extends TableSearchService {
             new PaginationModel({
                 from: searchModel.pagination.from,
                 size: 0,
-                total: 0,
+                total: 10,
             }),
         );
 

@@ -36,6 +36,7 @@ export default function BodyCellAction(props: BodyCellActionProps) {
                     x =>
                         !isHidden(x) && (
                             <div
+                                key={`container-${x.icon}`}
                                 title={makeTitle(x)}
                                 className={makeClassName(x)}
                             >
