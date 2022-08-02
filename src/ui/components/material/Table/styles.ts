@@ -31,7 +31,11 @@ export const ContainerTable = styled.div`
     }
 
     &&[data-border-sizing='small'] {
-        padding-bottom: 20px;
+        padding-bottom: 0px;
+    }
+
+    &&[data-border='true'][data-border-sizing='small'] {
+        min-height: 364px;
     }
 
     &&[data-border-sizing='medium'] {

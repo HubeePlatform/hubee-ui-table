@@ -50,6 +50,7 @@ const IndeterminateCheckbox = forwardRef<HTMLInputElement, Props>(
                         type="checkbox"
                         ref={combinedRef}
                         {...rest}
+                        title="Selecionar"
                     />
                 )}
                 {!isHeader && (
@@ -62,6 +63,10 @@ const IndeterminateCheckbox = forwardRef<HTMLInputElement, Props>(
                         type="checkbox"
                         ref={combinedRef}
                         {...rest}
+                        title="Selecionar"
+                        onClick={e => {
+                            e.stopPropagation();
+                        }}
                     />
                 )}
             </React.Fragment>

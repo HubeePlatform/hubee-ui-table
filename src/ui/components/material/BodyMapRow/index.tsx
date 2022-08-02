@@ -16,6 +16,24 @@ export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
     const { rows, prepareRow } = props;
     const { rowActions, enableRowSelectedStyle } = props.rowOptions;
 
+    const enableRowAction = () => {
+        if (rowActions === null || rowActions === undefined) return false;
+
+        const action = rowActions?.find(x => x.isRowActionOnClick);
+        if (action === undefined || action === null) return false;
+
+        return true;
+    };
+
+    const handleOnClick = (event: any, row: Row<any>) => {
+        event.stopPropagation();
+
+        if (!enableRowAction()) return;
+
+        const action = rowActions?.find(x => x.isRowActionOnClick);
+        action?.onClick(event, row.original);
+    };
+
     return (
         <>
             {rows.map((row, index) => {
@@ -26,6 +44,8 @@ export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
                         key={`body-rows-${index}`}
                         data-is-selected={row.isSelected}
                         data-enable-row-selected-style={enableRowSelectedStyle}
+                        data-enable-row-action={enableRowAction()}
+                        onClick={e => handleOnClick(e, row)}
                     >
                         {row.cells.map((cell, index) => {
                             return (

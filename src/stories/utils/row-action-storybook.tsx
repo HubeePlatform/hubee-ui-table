@@ -5,9 +5,11 @@ export default class RowActionStorybook {
     static makeActions(): Action<any>[] {
         return [
             {
-                icon: TableIcons.SEARCH,
+                icon: TableIcons.OPEN_IN_NEW,
                 tooltip: 'Abrir em uma nova aba',
-                onClick: (event, rowData) => console.log(rowData),
+                isRowActionOnClick: true,
+                onClick: (event, rowData) =>
+                    console.log('OPEN_IN_NEW', rowData),
             },
             {
                 icon: TableIcons.DELETE,

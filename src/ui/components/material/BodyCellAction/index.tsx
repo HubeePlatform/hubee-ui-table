@@ -1,6 +1,7 @@
 import { Action } from '@/core/interfaces';
 import { TableCell } from './styles';
 import React from 'react';
+import Icon from '@mui/material/Icon';
 import { IconButton } from '@mui/material';
 import { TableIconsMaterial } from '@/core/models/table';
 
@@ -29,6 +30,16 @@ export default function BodyCellAction(props: BodyCellActionProps) {
     const makeClassName = (action: Action<any>) =>
         isDisabled(action) ? 'action-disabled' : 'action';
 
+    const makeIcon = (icon: string) => {
+        const element = TableIconsMaterial.get(icon);
+
+        if (element === undefined) {
+            return <Icon>{icon}</Icon>;
+        }
+
+        return element;
+    };
+
     return (
         <TableCell className="table-cell-action-body">
             <div className="row-action">
@@ -43,10 +54,13 @@ export default function BodyCellAction(props: BodyCellActionProps) {
                                 <IconButton
                                     key={x.icon}
                                     title={makeTitle(x)}
-                                    onClick={event => x.onClick(event, rowData)}
+                                    onClick={event => {
+                                        event.stopPropagation();
+                                        x.onClick(event, rowData);
+                                    }}
                                     disabled={isDisabled(x)}
                                 >
-                                    {TableIconsMaterial.get(x.icon)}
+                                    {makeIcon(x.icon)}
                                 </IconButton>
                             </div>
                         ),

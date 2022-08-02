@@ -9,7 +9,6 @@ import {
     useSortBy,
     useRowSelect,
     usePagination,
-    Row,
 } from 'react-table';
 import { ColumnService, EventService } from '@/core/services';
 import {
@@ -43,7 +42,6 @@ import {
     ContainerPaginationHeader,
 } from './styles';
 import IndeterminateCheckbox from '../TableCellSelect';
-import { EventKey } from '@/core/models/event';
 import TableRowSelectHelper from '@/core/helpers/table-row-select-helper';
 import _ from 'lodash';
 
@@ -67,10 +65,15 @@ export default function MaterialTable(props: TableProps) {
         withTableInfoResult,
     } = tableProps.styleOptions as TableStyleOptions;
 
-    const { rowsPerPage, withPaginationAtTop, rowsPerPageOptions } =
+    const { pageIndex, rowsPerPage, withPaginationAtTop, rowsPerPageOptions } =
         tableProps.paginationOptions as TablePaginationOptions;
 
     const initialMount = useRef(true);
+
+    const [requestState, setRequestState] = useState({
+        pageIndex: pageIndex as number,
+        rowsPerPage: rowsPerPage,
+    });
 
     const [responseState, setResponseState] = useState({
         isLoading: true,
@@ -103,16 +106,12 @@ export default function MaterialTable(props: TableProps) {
         headerGroups,
         rows,
         prepareRow,
-        gotoPage,
-        setPageSize,
         selectedFlatRows,
         toggleRowSelected,
-        state: { pageIndex, pageSize, sortBy, selectedRowIds },
+        state: { sortBy, selectedRowIds },
     } = useTable(
         {
             initialState: {
-                pageIndex: 0,
-                pageSize: rowsPerPage,
                 selectedRowIds: defaultSelectedRowIds,
                 sortBy: [
                     {
@@ -188,8 +187,10 @@ export default function MaterialTable(props: TableProps) {
             responseState.search,
         );
 
-        searchModel.updatePagination(pageIndex, pageSize as number);
-
+        searchModel.updatePagination(
+            requestState.pageIndex,
+            requestState.rowsPerPage as number,
+        );
         return searchModel;
     };
 
@@ -249,17 +250,25 @@ export default function MaterialTable(props: TableProps) {
             });
 
             controlRowSelectedDefaultValue(response.data);
+            EventService.dispatchSearchModelRequestEvent(searchModel);
         });
     };
 
     const handleOnChangePage = (event: any, newPage: number) => {
-        gotoPage(newPage);
+        setRequestState({
+            ...requestState,
+            pageIndex: newPage,
+        });
     };
 
     const handleOnChangeRowsPerPage = (
         event: React.ChangeEvent<HTMLInputElement>,
     ) => {
-        setPageSize(Number(`${event.target.value}`));
+        setRequestState({
+            ...requestState,
+            pageIndex: 0,
+            rowsPerPage: Number(`${event.target.value}`),
+        });
     };
 
     const handleOnChangeQuery = (criterias: SearchCriteriaModel[]) => {
@@ -288,8 +297,9 @@ export default function MaterialTable(props: TableProps) {
         if (isInitialMount()) return;
 
         const searchModel = getCurrentSearchModel();
+
         requestSearch(searchModel);
-    }, [pageIndex, pageSize]);
+    }, [requestState.pageIndex, requestState.rowsPerPage]);
 
     useEffect(() => {
         if (isInitialMount()) return;
@@ -334,8 +344,8 @@ export default function MaterialTable(props: TableProps) {
                         )}
                         {withPaginationAtTop && (
                             <Pagination
-                                page={pageIndex}
-                                rowsPerPage={pageSize as number}
+                                page={requestState.pageIndex}
+                                rowsPerPage={requestState.rowsPerPage as number}
                                 rowsPerPageOptions={
                                     rowsPerPageOptions as number[]
                                 }
@@ -358,9 +368,9 @@ export default function MaterialTable(props: TableProps) {
                         />
                     </TableHead>
                     <TableBodyOperations
-                        rowsPerPage={pageSize}
-                        isLoading={responseState.isLoading}
                         count={responseState.value.page.total}
+                        isLoading={responseState.isLoading}
+                        rowsPerPage={requestState.rowsPerPage as number}
                     />
                     <TableBody className="material-table-body">
                         <BodyMapRow
@@ -371,8 +381,8 @@ export default function MaterialTable(props: TableProps) {
                     </TableBody>
                     <TableFooter>
                         <Pagination
-                            page={pageIndex}
-                            rowsPerPage={pageSize as number}
+                            page={requestState.pageIndex}
+                            rowsPerPage={requestState.rowsPerPage as number}
                             rowsPerPageOptions={rowsPerPageOptions as number[]}
                             count={responseState.value.page.total}
                             onPageChange={handleOnChangePage}

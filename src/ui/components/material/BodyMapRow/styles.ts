@@ -7,4 +7,8 @@ export const TableRowContainer = styled(TableRow)`
             font-weight: 700;
         }
     }
+
+    &[data-enable-row-action='true'] {
+        cursor: pointer;
+    }
 `;
