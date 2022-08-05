@@ -12,6 +12,7 @@ export default class ColumnService {
                 disableResizing: false,
                 width: column.width,
                 maxWidth: column.maxWidth,
+                align: column.align,
             } as Column;
         });
 

@@ -1,4 +1,9 @@
-import { IGlobalFilterComponent, ITableSearchService } from '@/core/interfaces';
+import {
+    EventOptionsDefault,
+    IGlobalFilterComponent,
+    ITableSearchService,
+    TableEventOptions,
+} from '@/core/interfaces';
 import {
     PaginationOptionsDefault,
     TablePaginationOptions,
@@ -15,6 +20,7 @@ export interface TableProps {
     paginationOptions?: TablePaginationOptions;
     styleOptions?: TableStyleOptions;
     rowOptions?: TableRowOptions;
+    eventOptions?: TableEventOptions;
 }
 
 export const TablePropsDefault = (props: TableProps) => {
@@ -24,5 +30,6 @@ export const TablePropsDefault = (props: TableProps) => {
         paginationOptions: PaginationOptionsDefault(props.paginationOptions),
         rowOptions: RowOptionsDefault(props.rowOptions),
         styleOptions: StyleOptionsDefault(props.styleOptions),
+        eventOptions: EventOptionsDefault(props.eventOptions),
     } as TableProps;
 };

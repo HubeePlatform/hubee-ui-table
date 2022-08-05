@@ -6,3 +6,4 @@ export { default as Action } from './action-props';
 export * from './table-pagination-options-props';
 export * from './table-style-options-props';
 export * from './table-row-options-props';
+export * from './event-options-props';

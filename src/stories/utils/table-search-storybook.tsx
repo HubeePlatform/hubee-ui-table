@@ -119,11 +119,12 @@ export default class TableSearchStorybook extends TableSearchService {
                 maxWidth: 121,
             }),
             new ColumnModel<PersonTestModel>('Age', 'age', {
-                width: 60,
+                width: 40,
+                align: 'right',
             }),
             new ColumnModel<PersonTestModel>('Visits', 'visits', {
-                width: 100,
-                maxWidth: 100,
+                width: 40,
+                align: 'right',
             }),
             new ColumnModel<PersonTestModel>('Status', 'status', {
                 sorting: false,

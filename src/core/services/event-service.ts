@@ -1,14 +1,17 @@
 import { Row } from 'react-table';
 import { EventKey } from '@/core/models/event';
-import { SearchModel } from '@/index';
+import { SearchModel, SelectedRowsModel } from '@/index';
 
 export default class EventService {
-    static dispatchSelectedRowsEvent(selectedFlatRows: Row<any>[]): void {
+    static dispatchSelectedRowsEvent(
+        selectedRowIds: Record<string, boolean>,
+        selectedFlatRows: Row<any>[],
+    ): void {
         const event = new CustomEvent<any>(EventKey.selectedRowsEvent, {
-            detail: {
-                ids: selectedFlatRows.map(x => x.original?.id),
-                values: selectedFlatRows.map(x => x.original),
-            },
+            detail: new SelectedRowsModel(
+                Object.keys(selectedRowIds),
+                selectedFlatRows.map(x => x.original),
+            ),
         });
 
         document.dispatchEvent(event);

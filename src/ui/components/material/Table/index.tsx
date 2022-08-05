@@ -9,12 +9,14 @@ import {
     useSortBy,
     useRowSelect,
     usePagination,
+    Row,
 } from 'react-table';
 import { ColumnService, EventService } from '@/core/services';
 import {
     PaginationOptionsDefault,
     RowOptionsDefault,
     StyleOptionsDefault,
+    TableEventOptions,
     TablePaginationOptions,
     TableProps,
     TablePropsDefault,
@@ -48,8 +50,12 @@ import _ from 'lodash';
 export default function MaterialTable(props: TableProps) {
     const tableProps = TablePropsDefault(props);
 
-    const { service, GlobalFilterComponent, rowOptions } = tableProps;
+    const { service, GlobalFilterComponent, rowOptions, paginationOptions } =
+        tableProps;
     service.setTableProps(tableProps);
+
+    const { enableSearchModelRequestEvent } =
+        tableProps.eventOptions as TableEventOptions;
 
     const {
         enableRowActions,
@@ -65,13 +71,13 @@ export default function MaterialTable(props: TableProps) {
         withTableInfoResult,
     } = tableProps.styleOptions as TableStyleOptions;
 
-    const { pageIndex, rowsPerPage, withPaginationAtTop, rowsPerPageOptions } =
+    const { rowsPerPage, withPaginationAtTop, rowsPerPageOptions } =
         tableProps.paginationOptions as TablePaginationOptions;
 
     const initialMount = useRef(true);
 
     const [requestState, setRequestState] = useState({
-        pageIndex: pageIndex as number,
+        pageIndex: paginationOptions?.pageIndex as number,
         rowsPerPage: rowsPerPage,
     });
 
@@ -85,7 +91,38 @@ export default function MaterialTable(props: TableProps) {
         active: !_.isEmpty(propertyNameForDefaultRowSelected),
         enableDispatchSelectedRowsEvent: true,
         visualizedRows: [] as any[],
+        selectedFlatRows: [] as Row<any>[],
     });
+
+    const dispatchSelectedRowsEvent = (
+        selectedRowIds: Record<string, boolean>,
+        selectedFlatRows: Row<any>[],
+    ) => {
+        const rowIds = Object.keys(selectedRowIds);
+        const current = [...controlRowSelectedState.selectedFlatRows];
+        const currentIds = current.map(x => x.original.id);
+
+        current.push(
+            ...selectedFlatRows
+                .filter(x => !current.includes(x))
+                .filter(x => !currentIds.includes(x.original.id)),
+        );
+
+        const distinct = (value: any, index: number, self: any) => {
+            return self.indexOf(value) === index;
+        };
+
+        const values = current
+            .filter(distinct)
+            .filter(x => rowIds.includes(`${x.original.id}`));
+
+        setControlRowSelectedState({
+            ...controlRowSelectedState,
+            selectedFlatRows: values,
+        });
+
+        EventService.dispatchSelectedRowsEvent(selectedRowIds, values);
+    };
 
     const columns = React.useMemo<Column<any>[]>(
         () => ColumnService.makeModelToColumn(service.makeColumns()),
@@ -108,11 +145,15 @@ export default function MaterialTable(props: TableProps) {
         prepareRow,
         selectedFlatRows,
         toggleRowSelected,
+        gotoPage,
+        setPageSize,
         state: { sortBy, selectedRowIds },
     } = useTable(
         {
             initialState: {
                 selectedRowIds: defaultSelectedRowIds,
+                pageIndex: paginationOptions?.pageIndex,
+                pageSize: paginationOptions?.rowsPerPage,
                 sortBy: [
                     {
                         id: initialSearchModel.orderBy.defaultField,
@@ -250,11 +291,15 @@ export default function MaterialTable(props: TableProps) {
             });
 
             controlRowSelectedDefaultValue(response.data);
-            EventService.dispatchSearchModelRequestEvent(searchModel);
+
+            if (enableSearchModelRequestEvent) {
+                EventService.dispatchSearchModelRequestEvent(searchModel);
+            }
         });
     };
 
     const handleOnChangePage = (event: any, newPage: number) => {
+        gotoPage(newPage);
         setRequestState({
             ...requestState,
             pageIndex: newPage,
@@ -264,10 +309,13 @@ export default function MaterialTable(props: TableProps) {
     const handleOnChangeRowsPerPage = (
         event: React.ChangeEvent<HTMLInputElement>,
     ) => {
+        const value = Number(`${event.target.value}`);
+
+        setPageSize(value);
         setRequestState({
             ...requestState,
             pageIndex: 0,
-            rowsPerPage: Number(`${event.target.value}`),
+            rowsPerPage: value,
         });
     };
 
@@ -275,7 +323,15 @@ export default function MaterialTable(props: TableProps) {
         const searchModel = getCurrentSearchModel();
         searchModel.updateSearchCriteria(criterias);
 
-        requestSearch(searchModel);
+        if (requestState.pageIndex !== 0) {
+            setResponseState({
+                ...responseState,
+                search: searchModel,
+            });
+            handleOnChangePage(null, 0);
+        } else {
+            requestSearch(searchModel);
+        }
     };
 
     const isInitialMount = () => {
@@ -316,7 +372,7 @@ export default function MaterialTable(props: TableProps) {
         if (!enableRowSelected) return;
         if (!controlRowSelectedState.enableDispatchSelectedRowsEvent) return;
 
-        EventService.dispatchSelectedRowsEvent(selectedFlatRows);
+        dispatchSelectedRowsEvent(selectedRowIds, selectedFlatRows);
     }, [selectedRowIds]);
 
     return (

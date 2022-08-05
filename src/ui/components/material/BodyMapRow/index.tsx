@@ -51,7 +51,8 @@ export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
                             return (
                                 <>
                                     <TableCell
-                                        title={cell?.value}
+                                        align={cell.column['align'] ?? 'left'}
+                                        title={`${cell?.value ?? ''}`}
                                         {...cell.getCellProps({
                                             key: `table-cell${index}`,
                                         })}

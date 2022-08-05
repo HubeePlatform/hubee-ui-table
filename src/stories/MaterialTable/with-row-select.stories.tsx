@@ -18,13 +18,16 @@ const TemplateRowSelect: ComponentStory<typeof MaterialTable> = () => (
             enableRowSelectedStyle: true,
             //propertyNameForDisableRow: 'rowDisabled',
             //propertyNameForDefaultRowSelected: 'isSelectedValue',
-            defaultSelectedRowIds: {
-                '1': true,
-                '2': true,
-                '3': true,
-                '4': true,
-                '5': true,
-            },
+            // defaultSelectedRowIds: {
+            //     '1': true,
+            //     '2': true,
+            //     '3': true,
+            //     '4': true,
+            //     '5': true,
+            // },
+        }}
+        eventOptions={{
+            enableSearchModelRequestEvent: false,
         }}
         paginationOptions={{
             rowsPerPage: 10,
