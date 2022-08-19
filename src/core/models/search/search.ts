@@ -10,18 +10,24 @@ export default class SearchModel {
     criterias: SearchCriteriaModel[];
     pagination: PaginationModel;
     orderBy: SearchSortModel;
+    enableInfiniteScroll: boolean;
 
     constructor(
         endpoint: string,
         defaultOrderByField: string,
-        { criterias = [] as SearchCriteriaModel[], isOrderByDesc = false },
+        {
+            criterias = [] as SearchCriteriaModel[],
+            isOrderByDesc = false,
+            enableInfiniteScroll = false,
+        },
     ) {
         this.endpoint = endpoint;
         this.criterias = criterias;
+        this.enableInfiniteScroll = enableInfiniteScroll;
+        this.pagination = PaginationModel.makeByTable(0, 0);
         this.orderBy = new SearchSortModel(defaultOrderByField, {
             isOrderByDesc,
         });
-        this.pagination = PaginationModel.makeByTable(0, 0);
     }
 
     static makeEmpty(): SearchModel {

@@ -4,30 +4,27 @@ import { MaterialTable } from '@/ui/components/material';
 import TableSearchStorybook from '../utils/table-search-storybook';
 import StoryGroupTypes from '../utils/story-group-types';
 import { Sizing } from '@/core/models/common';
+import RowActionStorybook from '../utils/row-action-storybook';
 
 export default {
     title: StoryGroupTypes.MATERIAL_TABLE,
     component: MaterialTable,
 } as ComponentMeta<typeof MaterialTable>;
 
-const TemplateRowSelect: ComponentStory<typeof MaterialTable> = () => (
+const TemplateNavigateKeyboardEvent: ComponentStory<
+    typeof MaterialTable
+> = () => (
     <MaterialTable
-        service={new TableSearchStorybook()}
+        service={new TableSearchStorybook(true)}
         rowOptions={{
             enableRowSelected: true,
             enableRowSelectedStyle: true,
-            propertyNameForDisableRow: 'rowDisabled',
-            propertyNameForDefaultRowSelected: 'isSelectedValue',
-            // defaultSelectedRowIds: {
-            //     '1': true,
-            //     '2': true,
-            //     '3': true,
-            //     '4': true,
-            //     '5': true,
-            // },
+            enableRowActions: true,
+            rowActions: RowActionStorybook.makeActions(),
         }}
         eventOptions={{
-            enableSearchModelRequestEvent: false,
+            enableSearchModelRequestEvent: true,
+            enableNavigateKeyboardEvent: true,
         }}
         paginationOptions={{
             rowsPerPage: 10,
@@ -40,4 +37,4 @@ const TemplateRowSelect: ComponentStory<typeof MaterialTable> = () => (
     />
 );
 
-export const WithRowSelect = TemplateRowSelect.bind({});
+export const WithNavigateKeyboardEvent = TemplateNavigateKeyboardEvent.bind({});

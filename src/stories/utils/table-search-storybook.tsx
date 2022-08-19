@@ -10,10 +10,13 @@ import { PersonTestModel } from '@/core/models/test';
 import { TableSearchService } from '@/core/services';
 import { MakeDataHelper, StringHelper } from '@/core/helpers';
 import React from 'react';
+import { Input } from '@mui/material';
 
 export default class TableSearchStorybook extends TableSearchService {
-    constructor() {
+    renderInput: boolean;
+    constructor(renderInput = false) {
         super();
+        this.renderInput = renderInput;
         TableSearchService.call(this);
 
         //sample
@@ -62,6 +65,8 @@ export default class TableSearchStorybook extends TableSearchService {
                 isSelectedValue: index === 0 || index === 2 ? true : false,
                 firstName: index === 0 ? ' Miranda' : MakeDataHelper.makeName(),
                 lastName: index === 0 ? 'Assis' : MakeDataHelper.makeName(),
+                price: index === 0 ? 29 : Math.floor(Math.random() * 30),
+                quantity: index === 0 ? 1 : Math.floor(Math.random() * 30),
                 age: index === 0 ? 29 : Math.floor(Math.random() * 30),
                 visits: index === 0 ? 2 : Math.floor(Math.random() * 100),
                 progress: index === 0 ? 4 : Math.floor(Math.random() * 100),
@@ -97,7 +102,7 @@ export default class TableSearchStorybook extends TableSearchService {
             new PaginationModel({
                 from: searchModel.pagination.from,
                 size: 0,
-                total: 10,
+                total: 20,
             }),
         );
 
@@ -114,14 +119,44 @@ export default class TableSearchStorybook extends TableSearchService {
             }).withRender((value: string) => {
                 return <span>{value}</span>;
             }),
-            new ColumnModel<PersonTestModel>('Last Name', 'lastName', {
-                width: 121,
-                maxWidth: 121,
-            }),
-            new ColumnModel<PersonTestModel>('Age', 'age', {
-                width: 40,
-                align: 'right',
-            }),
+
+            this.renderInput
+                ? new ColumnModel<PersonTestModel>('Price', 'price', {
+                      width: 152,
+                      maxWidth: 152,
+                  }).withRender((value: string) => {
+                      return (
+                          <Input
+                              type="text"
+                              defaultValue={value}
+                              onClick={e => e.stopPropagation()}
+                          />
+                      );
+                  })
+                : new ColumnModel<PersonTestModel>('Last Name', 'lastName', {
+                      width: 121,
+                      maxWidth: 121,
+                  }),
+
+            this.renderInput
+                ? new ColumnModel<PersonTestModel>('Quantity', 'quantity', {
+                      width: 152,
+                      maxWidth: 152,
+                  }).withRender((value: string) => {
+                      return (
+                          <Input
+                              type="text"
+                              className="quantity"
+                              defaultValue={value}
+                              onClick={e => e.stopPropagation()}
+                              onFocus={e => e.target.select()}
+                          />
+                      );
+                  })
+                : new ColumnModel<PersonTestModel>('Age', 'age', {
+                      width: 40,
+                      align: 'right',
+                  }),
             new ColumnModel<PersonTestModel>('Visits', 'visits', {
                 width: 40,
                 align: 'right',

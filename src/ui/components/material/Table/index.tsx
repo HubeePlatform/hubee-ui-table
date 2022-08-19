@@ -1,5 +1,4 @@
-/* eslint-disable react/prop-types */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import MaUTable from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -11,12 +10,17 @@ import {
     usePagination,
     Row,
 } from 'react-table';
-import { ColumnService, EventService } from '@/core/services';
+import {
+    ColumnService,
+    EventService,
+    NavigatingService,
+} from '@/core/services';
 import {
     PaginationOptionsDefault,
     RowOptionsDefault,
     StyleOptionsDefault,
     TableEventOptions,
+    TableInfiniteScrollOptions,
     TablePaginationOptions,
     TableProps,
     TablePropsDefault,
@@ -32,6 +36,7 @@ import {
     BodyMapRow,
 } from '@/ui/components';
 import {
+    keyboardEventKey,
     SearchCriteriaModel,
     SearchModel,
     SearchResponseModel,
@@ -43,9 +48,8 @@ import {
     ContainerFilter,
     ContainerPaginationHeader,
 } from './styles';
-import IndeterminateCheckbox from '../TableCellSelect';
-import TableRowSelectHelper from '@/core/helpers/table-row-select-helper';
 import _ from 'lodash';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 export default function MaterialTable(props: TableProps) {
     const tableProps = TablePropsDefault(props);
@@ -54,7 +58,7 @@ export default function MaterialTable(props: TableProps) {
         tableProps;
     service.setTableProps(tableProps);
 
-    const { enableSearchModelRequestEvent } =
+    const { enableSearchModelRequestEvent, enableNavigateKeyboardEvent } =
         tableProps.eventOptions as TableEventOptions;
 
     const {
@@ -71,10 +75,18 @@ export default function MaterialTable(props: TableProps) {
         withTableInfoResult,
     } = tableProps.styleOptions as TableStyleOptions;
 
-    const { rowsPerPage, withPaginationAtTop, rowsPerPageOptions } =
-        tableProps.paginationOptions as TablePaginationOptions;
+    const {
+        enablePagination,
+        rowsPerPage,
+        withPaginationAtTop,
+        rowsPerPageOptions,
+    } = tableProps.paginationOptions as TablePaginationOptions;
+
+    const { enableInfiniteScroll } =
+        tableProps.infiniteScrollOptions as TableInfiniteScrollOptions;
 
     const initialMount = useRef(true);
+    const boardRef = useRef<HTMLDivElement>(null);
 
     const [requestState, setRequestState] = useState({
         pageIndex: paginationOptions?.pageIndex as number,
@@ -87,6 +99,11 @@ export default function MaterialTable(props: TableProps) {
         value: SearchResponseModel.makeEmpty(),
     });
 
+    const [navigatingState, setNavigatingState] = useState({
+        enable: false,
+        isEditing: false,
+    });
+
     const [controlRowSelectedState, setControlRowSelectedState] = useState({
         active: !_.isEmpty(propertyNameForDefaultRowSelected),
         enableDispatchSelectedRowsEvent: true,
@@ -94,35 +111,38 @@ export default function MaterialTable(props: TableProps) {
         selectedFlatRows: [] as Row<any>[],
     });
 
-    const dispatchSelectedRowsEvent = (
-        selectedRowIds: Record<string, boolean>,
-        selectedFlatRows: Row<any>[],
-    ) => {
-        const rowIds = Object.keys(selectedRowIds);
-        const current = [...controlRowSelectedState.selectedFlatRows];
-        const currentIds = current.map(x => x.original.id);
+    const dispatchSelectedRowsEvent = useCallback(
+        (
+            selectedRowIds: Record<string, boolean>,
+            selectedFlatRows: Row<any>[],
+        ) => {
+            const rowIds = Object.keys(selectedRowIds);
+            const current = [...controlRowSelectedState.selectedFlatRows];
+            const currentIds = current.map(x => x.original.id);
 
-        current.push(
-            ...selectedFlatRows
-                .filter(x => !current.includes(x))
-                .filter(x => !currentIds.includes(x.original.id)),
-        );
+            current.push(
+                ...selectedFlatRows
+                    .filter(x => !current.includes(x))
+                    .filter(x => !currentIds.includes(x.original.id)),
+            );
 
-        const distinct = (value: any, index: number, self: any) => {
-            return self.indexOf(value) === index;
-        };
+            const distinct = (value: any, index: number, self: any) => {
+                return self.indexOf(value) === index;
+            };
 
-        const values = current
-            .filter(distinct)
-            .filter(x => rowIds.includes(`${x.original.id}`));
+            const values = current
+                .filter(distinct)
+                .filter(x => rowIds.includes(`${x.original.id}`));
 
-        setControlRowSelectedState({
-            ...controlRowSelectedState,
-            selectedFlatRows: values,
-        });
+            setControlRowSelectedState({
+                ...controlRowSelectedState,
+                selectedFlatRows: values,
+            });
 
-        EventService.dispatchSelectedRowsEvent(selectedRowIds, values);
-    };
+            EventService.dispatchSelectedRowsEvent(selectedRowIds, values);
+        },
+        [controlRowSelectedState.selectedFlatRows],
+    );
 
     const columns = React.useMemo<Column<any>[]>(
         () => ColumnService.makeModelToColumn(service.makeColumns()),
@@ -178,49 +198,19 @@ export default function MaterialTable(props: TableProps) {
             hooks.visibleColumns.push(columns =>
                 !enableRowSelected
                     ? columns
-                    : [
-                          {
-                              id: 'selection',
-                              Header: props => {
-                                  const checkboxProps =
-                                      TableRowSelectHelper.getConditionalSelectHeader(
-                                          {
-                                              headerProps: props,
-                                              shouldSelectPage: true,
-                                              checkIfRowIsSelectable: row =>
-                                                  !service.verifyDisableRowSelected(
-                                                      row.original,
-                                                  ),
-                                          },
-                                      );
-
-                                  return (
-                                      <div>
-                                          <IndeterminateCheckbox
-                                              isHeader={true}
-                                              service={service}
-                                              {...checkboxProps}
-                                          />
-                                      </div>
-                                  );
-                              },
-                              width: '2%',
-                              Cell: ({ row }) => (
-                                  <div>
-                                      <IndeterminateCheckbox
-                                          isHeader={false}
-                                          row={row}
-                                          service={service}
-                                          {...row.getToggleRowSelectedProps()}
-                                      />
-                                  </div>
-                              ),
-                          },
-                          ...columns,
-                      ],
+                    : [ColumnService.makeSelectionColumn(service), ...columns],
             );
         },
     );
+
+    const isInitialMount = () => {
+        if (initialMount.current) {
+            initialMount.current = false;
+            return true;
+        }
+
+        return false;
+    };
 
     const getCurrentSearchModel = (): SearchModel => {
         const searchModel = ObjectHelper.clone(
@@ -283,9 +273,14 @@ export default function MaterialTable(props: TableProps) {
         }
 
         service.search<any>(searchModel).then(response => {
+            const currentValue = responseState.value.data;
+            const mergeData = (currentValue as any[]).concat(response.data);
+
             setResponseState({
                 ...responseState,
-                value: response,
+                value: enableInfiniteScroll
+                    ? new SearchResponseModel(mergeData, response.page)
+                    : response,
                 search: searchModel,
                 isLoading: false,
             });
@@ -296,6 +291,21 @@ export default function MaterialTable(props: TableProps) {
                 EventService.dispatchSearchModelRequestEvent(searchModel);
             }
         });
+    };
+
+    const handleInfiniteScrollNext = () => {
+        if (enableInfiniteScroll === false) return;
+
+        const searchModel = getCurrentSearchModel();
+        const { from, size } = responseState.value.page;
+        const currentIndex = from === 0 ? 0 : from / size;
+
+        searchModel.updatePagination(
+            currentIndex + 1,
+            requestState.rowsPerPage as number,
+        );
+
+        requestSearch(searchModel);
     };
 
     const handleOnChangePage = (event: any, newPage: number) => {
@@ -334,14 +344,92 @@ export default function MaterialTable(props: TableProps) {
         }
     };
 
-    const isInitialMount = () => {
-        if (initialMount.current) {
-            initialMount.current = false;
-            return true;
-        }
+    const handleMouseDown = useCallback(
+        (event: MouseEvent) => {
+            const target = event.target as any;
 
-        return false;
-    };
+            if (
+                boardRef.current &&
+                boardRef?.current?.contains(event.target as any) &&
+                target?.closest('thead') === null &&
+                target?.closest('tbody') !== null
+            ) {
+                NavigatingService.navigateToOnMouseDown(target);
+
+                setNavigatingState({
+                    ...navigatingState,
+                    enable: true,
+                    isEditing: target?.className?.includes('input'),
+                });
+            } else {
+                setNavigatingState({
+                    ...navigatingState,
+                    enable: false,
+                    isEditing: false,
+                });
+            }
+        },
+        [boardRef, setNavigatingState],
+    );
+
+    const handleKeyDown = useCallback(
+        (event: KeyboardEvent) => {
+            if (!navigatingState.enable) return;
+
+            const currentIndex = NavigatingService.getCurrentIndex();
+            const rowId = NavigatingService.getRowId();
+
+            switch (event.key) {
+                case keyboardEventKey.ARROW_UP: {
+                    const newIndex = currentIndex - 1;
+                    NavigatingService.navigateTo(newIndex);
+                    EventService.dispatchNavigateBetweenRowWasChangedEvent(
+                        currentIndex,
+                        newIndex,
+                    );
+                    break;
+                }
+
+                case keyboardEventKey.ARROW_DOWN: {
+                    const newIndex = currentIndex + 1;
+                    NavigatingService.navigateTo(newIndex);
+                    EventService.dispatchNavigateBetweenRowWasChangedEvent(
+                        currentIndex,
+                        newIndex,
+                    );
+                    break;
+                }
+
+                case keyboardEventKey.ARROW_RIGHT:
+                    NavigatingService.quantityIncrement();
+                    break;
+
+                case keyboardEventKey.ARROW_LEFT:
+                    NavigatingService.quantityDecrement();
+                    break;
+
+                case keyboardEventKey.DELETE: {
+                    if (rowId.length <= 0) {
+                        EventService.dispatchRowNavigateWasDeletedEvent(rowId);
+                    }
+
+                    break;
+                }
+                default:
+                    break;
+            }
+        },
+        [navigatingState],
+    );
+
+    const onIsNavigatingChange = useCallback(() => {
+        if (!navigatingState.enable) {
+            NavigatingService.remove();
+            EventService.dispatchNavigateBetweenRowWasChangedEvent(-1, -1);
+        }
+    }, [navigatingState]);
+
+    useEffect(onIsNavigatingChange, [navigatingState, onIsNavigatingChange]);
 
     useEffect(() => {
         const searchModel = getCurrentSearchModel();
@@ -375,8 +463,19 @@ export default function MaterialTable(props: TableProps) {
         dispatchSelectedRowsEvent(selectedRowIds, selectedFlatRows);
     }, [selectedRowIds]);
 
+    useEffect(() => {
+        if (!enableNavigateKeyboardEvent) return;
+        window.addEventListener('mousedown', handleMouseDown);
+        window.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            window.removeEventListener('mousedown', handleMouseDown);
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [handleMouseDown, handleKeyDown]);
+
     return (
-        <ContainerRoot>
+        <ContainerRoot ref={boardRef}>
             {GlobalFilterComponent !== undefined && (
                 <ContainerFilter>
                     <GlobalFilterComponent
@@ -384,69 +483,94 @@ export default function MaterialTable(props: TableProps) {
                     />
                 </ContainerFilter>
             )}
-            <ContainerTable
-                data-border={withContainerBorder}
-                data-border-sizing={withContainerBorderSizing}
-                data-zebra-striped={withZebraStriped}
+            <InfiniteScroll
+                dataLength={responseState.value.page.total}
+                hasMore={
+                    enableInfiniteScroll === true &&
+                    responseState.value.page.from +
+                        responseState.value.page.size <=
+                        responseState.value.page.total
+                }
+                next={handleInfiniteScrollNext}
+                loader={<></>}
             >
-                {(withPaginationAtTop || withTableInfoResult) && (
-                    <ContainerPaginationHeader>
-                        {withTableInfoResult && (
-                            <TableInfoResult
-                                labelDisplayedResult={service.makeLabelDisplayedResult(
-                                    responseState.value,
-                                )}
-                            />
-                        )}
-                        {withPaginationAtTop && (
-                            <Pagination
-                                page={requestState.pageIndex}
-                                rowsPerPage={requestState.rowsPerPage as number}
-                                rowsPerPageOptions={
-                                    rowsPerPageOptions as number[]
-                                }
-                                count={responseState.value.page.total}
-                                onPageChange={handleOnChangePage}
-                                onRowsPerPageChange={handleOnChangeRowsPerPage}
-                            />
-                        )}
-                    </ContainerPaginationHeader>
-                )}
-                <CssBaseline />
-                <MaUTable
-                    {...getTableProps()}
-                    className={`material-table is-loading-${responseState.isLoading}`}
+                <ContainerTable
+                    data-border={withContainerBorder}
+                    data-border-sizing={withContainerBorderSizing}
+                    data-zebra-striped={withZebraStriped}
                 >
-                    <TableHead className="material-table-head">
-                        <TheadMapRow
-                            headerGroups={headerGroups}
-                            enableActions={enableRowActions as boolean}
-                        />
-                    </TableHead>
-                    <TableBodyOperations
-                        count={responseState.value.page.total}
-                        isLoading={responseState.isLoading}
-                        rowsPerPage={requestState.rowsPerPage as number}
-                    />
-                    <TableBody className="material-table-body">
-                        <BodyMapRow
-                            rows={rows}
-                            prepareRow={prepareRow}
-                            rowOptions={RowOptionsDefault(rowOptions)}
-                        />
-                    </TableBody>
-                    <TableFooter>
-                        <Pagination
-                            page={requestState.pageIndex}
-                            rowsPerPage={requestState.rowsPerPage as number}
-                            rowsPerPageOptions={rowsPerPageOptions as number[]}
+                    {enablePagination &&
+                        (withPaginationAtTop || withTableInfoResult) && (
+                            <ContainerPaginationHeader>
+                                {withTableInfoResult && (
+                                    <TableInfoResult
+                                        labelDisplayedResult={service.makeLabelDisplayedResult(
+                                            responseState.value,
+                                        )}
+                                    />
+                                )}
+                                {withPaginationAtTop && (
+                                    <Pagination
+                                        page={requestState.pageIndex}
+                                        rowsPerPage={
+                                            requestState.rowsPerPage as number
+                                        }
+                                        rowsPerPageOptions={
+                                            rowsPerPageOptions as number[]
+                                        }
+                                        count={responseState.value.page.total}
+                                        onPageChange={handleOnChangePage}
+                                        onRowsPerPageChange={
+                                            handleOnChangeRowsPerPage
+                                        }
+                                    />
+                                )}
+                            </ContainerPaginationHeader>
+                        )}
+                    <CssBaseline />
+                    <MaUTable
+                        {...getTableProps()}
+                        className={`material-table is-loading-${responseState.isLoading}`}
+                    >
+                        <TableHead className="material-table-head">
+                            <TheadMapRow
+                                headerGroups={headerGroups}
+                                enableActions={enableRowActions as boolean}
+                            />
+                        </TableHead>
+                        <TableBodyOperations
                             count={responseState.value.page.total}
-                            onPageChange={handleOnChangePage}
-                            onRowsPerPageChange={handleOnChangeRowsPerPage}
+                            isLoading={responseState.isLoading}
+                            rowsPerPage={requestState.rowsPerPage as number}
                         />
-                    </TableFooter>
-                </MaUTable>
-            </ContainerTable>
+                        <TableBody className="material-table-body">
+                            <BodyMapRow
+                                rows={rows}
+                                prepareRow={prepareRow}
+                                rowOptions={RowOptionsDefault(rowOptions)}
+                            />
+                        </TableBody>
+                        <TableFooter>
+                            {enablePagination && (
+                                <Pagination
+                                    page={requestState.pageIndex}
+                                    rowsPerPage={
+                                        requestState.rowsPerPage as number
+                                    }
+                                    rowsPerPageOptions={
+                                        rowsPerPageOptions as number[]
+                                    }
+                                    count={responseState.value.page.total}
+                                    onPageChange={handleOnChangePage}
+                                    onRowsPerPageChange={
+                                        handleOnChangeRowsPerPage
+                                    }
+                                />
+                            )}
+                        </TableFooter>
+                    </MaUTable>
+                </ContainerTable>
+            </InfiniteScroll>
         </ContainerRoot>
     );
 }

@@ -105,7 +105,17 @@ export const ContainerTable = styled.div`
                 border-top-style: solid;
             }
 
+            tr.navigation-active-row td:first-of-type {
+                border-left-style: solid;
+                border-top-style: solid;
+            }
+
             tr:hover td:last-child {
+                border-right-style: solid;
+                border-top-style: solid;
+            }
+
+            tr.navigation-active-row td:last-child {
                 border-right-style: solid;
                 border-top-style: solid;
             }
@@ -115,8 +125,17 @@ export const ContainerTable = styled.div`
                 border-style: solid none;
             }
 
+            tr.navigation-active-row td {
+                border: 1.2px solid rgba(0, 0, 0, 0.6);
+                border-style: solid none;
+            }
+
             tr:hover .row-action {
                 visibility: visible;
+            }
+
+            tr.navigation-active-row .row-action {
+                visibility: visible !important;
             }
         }
     }

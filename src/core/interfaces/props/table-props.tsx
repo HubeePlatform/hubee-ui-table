@@ -1,8 +1,10 @@
 import {
     EventOptionsDefault,
     IGlobalFilterComponent,
+    InfiniteScrollOptionsDefault,
     ITableSearchService,
     TableEventOptions,
+    TableInfiniteScrollOptions,
 } from '@/core/interfaces';
 import {
     PaginationOptionsDefault,
@@ -21,6 +23,7 @@ export interface TableProps {
     styleOptions?: TableStyleOptions;
     rowOptions?: TableRowOptions;
     eventOptions?: TableEventOptions;
+    infiniteScrollOptions?: TableInfiniteScrollOptions;
 }
 
 export const TablePropsDefault = (props: TableProps) => {
@@ -31,5 +34,8 @@ export const TablePropsDefault = (props: TableProps) => {
         rowOptions: RowOptionsDefault(props.rowOptions),
         styleOptions: StyleOptionsDefault(props.styleOptions),
         eventOptions: EventOptionsDefault(props.eventOptions),
+        infiniteScrollOptions: InfiniteScrollOptionsDefault(
+            props.infiniteScrollOptions,
+        ),
     } as TableProps;
 };

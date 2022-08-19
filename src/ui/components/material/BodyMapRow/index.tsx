@@ -42,6 +42,8 @@ export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
                     <TableRowContainer
                         {...row.getRowProps()}
                         key={`body-rows-${index}`}
+                        data-id={row.id}
+                        data-index={index}
                         data-is-selected={row.isSelected}
                         data-enable-row-selected-style={enableRowSelectedStyle}
                         data-enable-row-action={enableRowAction()}
