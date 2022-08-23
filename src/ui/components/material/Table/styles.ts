@@ -70,7 +70,7 @@ export const ContainerTable = styled.div`
 
         .table-cell-action-body {
             width: 1% !important;
-            min-width: 140px !important;
+            min-width: 152px !important;
             padding-top: 4px !important;
             padding-bottom: 4px !important;
         }

@@ -1,5 +1,5 @@
 import { Action } from '@/core/interfaces';
-import { TableCell } from './styles';
+import { Button, ContainerAction, TableCell } from './styles';
 import React from 'react';
 import Icon from '@mui/material/Icon';
 import { IconButton } from '@mui/material';
@@ -46,23 +46,39 @@ export default function BodyCellAction(props: BodyCellActionProps) {
                 {actions.map(
                     x =>
                         !isHidden(x) && (
-                            <div
+                            <ContainerAction
                                 key={`container-${x.icon}`}
                                 title={makeTitle(x)}
                                 className={makeClassName(x)}
                             >
-                                <IconButton
-                                    key={x.icon}
-                                    title={makeTitle(x)}
-                                    onClick={event => {
-                                        event.stopPropagation();
-                                        x.onClick(event, rowData);
-                                    }}
-                                    disabled={isDisabled(x)}
-                                >
-                                    {makeIcon(x.icon)}
-                                </IconButton>
-                            </div>
+                                {x.isButton !== true && (
+                                    <IconButton
+                                        key={x.icon}
+                                        title={makeTitle(x)}
+                                        onClick={event => {
+                                            event.stopPropagation();
+                                            x.onClick(event, rowData);
+                                        }}
+                                        disabled={isDisabled(x)}
+                                    >
+                                        {makeIcon(x.icon)}
+                                    </IconButton>
+                                )}
+
+                                {x.isButton == true && (
+                                    <Button
+                                        key={x.buttonName}
+                                        variant="outlined"
+                                        onClick={event => {
+                                            event.stopPropagation();
+                                            x.onClick(event, rowData);
+                                        }}
+                                        disabled={isDisabled(x)}
+                                    >
+                                        {x.buttonName}
+                                    </Button>
+                                )}
+                            </ContainerAction>
                         ),
                 )}
             </div>

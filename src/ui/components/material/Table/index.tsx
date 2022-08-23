@@ -484,6 +484,7 @@ export default function MaterialTable(props: TableProps) {
                 </ContainerFilter>
             )}
             <InfiniteScroll
+                className={`data-enable-infinite-scroll=${enableInfiniteScroll}`}
                 dataLength={responseState.value.page.total}
                 hasMore={
                     enableInfiniteScroll === true &&

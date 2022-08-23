@@ -5,6 +5,8 @@ export default interface Action<RowData extends object> {
     tooltip?: string;
     tooltipDisabled?: string;
     isRowActionOnClick?: boolean;
+    isButton?: boolean;
+    buttonName?: string;
     onClick: (event: any, data: RowData | RowData[]) => void;
     hidden?: (data: RowData | RowData[]) => boolean;
     disabled?: (data: RowData | RowData[]) => boolean;

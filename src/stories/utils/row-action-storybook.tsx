@@ -23,6 +23,20 @@ export default class RowActionStorybook {
                     return rowData['status'] === 'single';
                 },
             },
+            {
+                icon: '',
+                isButton: true,
+                tooltip: 'Sample button',
+                buttonName: 'Adicionar produto',
+                onClick: (event, rowData) => console.log(rowData),
+                hidden: rowData => {
+                    return rowData['status'] === 'relationship';
+                },
+                tooltipDisabled: 'Operação desabilitada',
+                disabled: rowData => {
+                    return rowData['status'] === 'single';
+                },
+            },
         ] as Action<any>[];
     }
 }
