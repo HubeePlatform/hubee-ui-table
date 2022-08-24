@@ -34,12 +34,13 @@ export const TableBody = styled(Body)`
 
 export const ContainerProgress = styled.div`
     position: absolute;
-    top: 48%;
+    width: 100%;
+    text-align: center;
 `;
 
 export const ContainerEmptyResult = styled.div`
     position: absolute;
     padding-top: 100px;
-    left: 42%;
-    top: 50%;
+    width: 100%;
+    text-align: center;
 `;
