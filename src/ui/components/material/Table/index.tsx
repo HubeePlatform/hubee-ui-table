@@ -438,6 +438,8 @@ export default function MaterialTable(props: TableProps) {
     );
 
     const onIsNavigatingChange = useCallback(() => {
+        if (!enableNavigateKeyboardEvent) return;
+
         if (!navigatingState.enable) {
             NavigatingService.remove();
             EventService.dispatchNavigateBetweenRowWasChangedEvent({});
