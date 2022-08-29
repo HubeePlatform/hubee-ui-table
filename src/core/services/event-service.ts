@@ -26,17 +26,23 @@ export default class EventService {
         document.dispatchEvent(event);
     }
 
-    static dispatchNavigateBetweenRowWasChangedEvent(
-        previousIndex: number,
-        nextIndex: number,
-    ): void {
+    static dispatchNavigateBetweenRowWasChangedEvent({
+        previousIndex = -1,
+        nextIndex = -1,
+        rows = [] as Row<any>[],
+    }): void {
         const previousRowId = NavigatingService.getRowIdByIndex(previousIndex);
         const rowId = NavigatingService.getRowIdByIndex(nextIndex);
+        const rowData = rows.find(x => `${x.id}` === `${rowId}`)?.original;
 
         const event = new CustomEvent<any>(
             EventKey.navigateBetweenRowWasChangedEvent,
             {
-                detail: new NavigateBetweenRowModel(previousRowId, rowId),
+                detail: new NavigateBetweenRowModel(
+                    previousRowId,
+                    rowId,
+                    rowData,
+                ),
             },
         );
 

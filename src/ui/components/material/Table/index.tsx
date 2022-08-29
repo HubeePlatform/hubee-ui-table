@@ -354,13 +354,14 @@ export default function MaterialTable(props: TableProps) {
                 target?.closest('thead') === null &&
                 target?.closest('tbody') !== null
             ) {
-                const newIndex =
+                const nextIndex =
                     NavigatingService.navigateToOnMouseDown(target);
 
-                EventService.dispatchNavigateBetweenRowWasChangedEvent(
-                    -1,
-                    newIndex,
-                );
+                EventService.dispatchNavigateBetweenRowWasChangedEvent({
+                    previousIndex: -1,
+                    nextIndex: nextIndex,
+                    rows,
+                });
 
                 setNavigatingState({
                     ...navigatingState,
@@ -375,7 +376,7 @@ export default function MaterialTable(props: TableProps) {
                 });
             }
         },
-        [boardRef, setNavigatingState],
+        [boardRef, setNavigatingState, rows],
     );
 
     const handleKeyDown = useCallback(
@@ -387,26 +388,28 @@ export default function MaterialTable(props: TableProps) {
 
             switch (event.key) {
                 case keyboardEventKey.ARROW_UP: {
-                    const newIndex = currentIndex - 1;
+                    const nextIndex = currentIndex - 1;
 
-                    if (NavigatingService.navigateTo(newIndex)) {
-                        EventService.dispatchNavigateBetweenRowWasChangedEvent(
-                            currentIndex,
-                            newIndex,
-                        );
+                    if (NavigatingService.navigateTo(nextIndex)) {
+                        EventService.dispatchNavigateBetweenRowWasChangedEvent({
+                            previousIndex: currentIndex,
+                            nextIndex,
+                            rows,
+                        });
                     }
 
                     break;
                 }
 
                 case keyboardEventKey.ARROW_DOWN: {
-                    const newIndex = currentIndex + 1;
+                    const nextIndex = currentIndex + 1;
 
-                    if (NavigatingService.navigateTo(newIndex)) {
-                        EventService.dispatchNavigateBetweenRowWasChangedEvent(
-                            currentIndex,
-                            newIndex,
-                        );
+                    if (NavigatingService.navigateTo(nextIndex)) {
+                        EventService.dispatchNavigateBetweenRowWasChangedEvent({
+                            previousIndex: currentIndex,
+                            nextIndex,
+                            rows,
+                        });
                     }
 
                     break;
@@ -431,13 +434,13 @@ export default function MaterialTable(props: TableProps) {
                     break;
             }
         },
-        [navigatingState],
+        [navigatingState, rows],
     );
 
     const onIsNavigatingChange = useCallback(() => {
         if (!navigatingState.enable) {
             NavigatingService.remove();
-            EventService.dispatchNavigateBetweenRowWasChangedEvent(-1, -1);
+            EventService.dispatchNavigateBetweenRowWasChangedEvent({});
         }
     }, [navigatingState]);
 
