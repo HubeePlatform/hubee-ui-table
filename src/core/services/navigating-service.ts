@@ -63,22 +63,29 @@ export default class NavigatingService {
         }
     }
 
-    static navigateToOnMouseDown(element: any): void {
+    static navigateToOnMouseDown(element: any): number {
         const index = NavigatingService.getIndexOnMouseDown(element);
         NavigatingService.navigateTo(index);
+        return index;
     }
 
-    static navigateTo(index: number): void {
-        const element = document.querySelector(`tr[data-index="${index}"]`);
-        if (element === null || element === undefined) return;
+    static navigateTo(index: number): boolean {
+        const makeQuerySelector = (index: number) => {
+            return `div[data-enable-navigation="true"] tr[data-index="${index}"]`;
+        };
+
+        const element = document.querySelector(makeQuerySelector(index));
+        if (element === null || element === undefined) return false;
 
         NavigatingService.remove();
 
         document
-            .querySelector(`tr[data-index="${index}"]`)
+            .querySelector(makeQuerySelector(index))
             ?.classList?.add('navigation-active-row');
 
         NavigatingService.focusToActive();
+
+        return true;
     }
 
     static remove(): void {

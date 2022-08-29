@@ -354,7 +354,13 @@ export default function MaterialTable(props: TableProps) {
                 target?.closest('thead') === null &&
                 target?.closest('tbody') !== null
             ) {
-                NavigatingService.navigateToOnMouseDown(target);
+                const newIndex =
+                    NavigatingService.navigateToOnMouseDown(target);
+
+                EventService.dispatchNavigateBetweenRowWasChangedEvent(
+                    -1,
+                    newIndex,
+                );
 
                 setNavigatingState({
                     ...navigatingState,
@@ -382,21 +388,27 @@ export default function MaterialTable(props: TableProps) {
             switch (event.key) {
                 case keyboardEventKey.ARROW_UP: {
                     const newIndex = currentIndex - 1;
-                    NavigatingService.navigateTo(newIndex);
-                    EventService.dispatchNavigateBetweenRowWasChangedEvent(
-                        currentIndex,
-                        newIndex,
-                    );
+
+                    if (NavigatingService.navigateTo(newIndex)) {
+                        EventService.dispatchNavigateBetweenRowWasChangedEvent(
+                            currentIndex,
+                            newIndex,
+                        );
+                    }
+
                     break;
                 }
 
                 case keyboardEventKey.ARROW_DOWN: {
                     const newIndex = currentIndex + 1;
-                    NavigatingService.navigateTo(newIndex);
-                    EventService.dispatchNavigateBetweenRowWasChangedEvent(
-                        currentIndex,
-                        newIndex,
-                    );
+
+                    if (NavigatingService.navigateTo(newIndex)) {
+                        EventService.dispatchNavigateBetweenRowWasChangedEvent(
+                            currentIndex,
+                            newIndex,
+                        );
+                    }
+
                     break;
                 }
 
@@ -499,6 +511,7 @@ export default function MaterialTable(props: TableProps) {
                     data-border={withContainerBorder}
                     data-border-sizing={withContainerBorderSizing}
                     data-zebra-striped={withZebraStriped}
+                    data-enable-navigation={enableNavigateKeyboardEvent}
                 >
                     {enablePagination &&
                         (withPaginationAtTop || withTableInfoResult) && (
