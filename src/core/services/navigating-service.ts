@@ -1,3 +1,5 @@
+import { ClassNameKey } from '@/core/models/common';
+
 export default class NavigatingService {
     static getCurrentIndex(): number {
         return Number(
@@ -72,11 +74,17 @@ export default class NavigatingService {
 
     static navigateToOnMouseDown(element: any): number {
         const index = NavigatingService.getIndexOnMouseDown(element);
-        NavigatingService.navigateTo(index);
+
+        const focusToActive =
+            element?.tagName !== 'INPUT' ||
+            element?.classList?.contains(ClassNameKey.navigateToFocusActive) ===
+                true;
+
+        NavigatingService.navigateTo(index, focusToActive);
         return index;
     }
 
-    static navigateTo(index: number): boolean {
+    static navigateTo(index: number, focusToActive = true): boolean {
         const makeQuerySelector = (index: number) => {
             return `div[data-enable-navigation="true"] tr[data-index="${index}"]`;
         };
@@ -90,7 +98,9 @@ export default class NavigatingService {
             .querySelector(makeQuerySelector(index))
             ?.classList?.add('navigation-active-row');
 
-        NavigatingService.focusToActive();
+        if (focusToActive) {
+            NavigatingService.focusToActive();
+        }
 
         return true;
     }

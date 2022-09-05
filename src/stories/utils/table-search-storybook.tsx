@@ -5,6 +5,7 @@ import {
     ColumnModel,
     SearchCriteriaModel,
     SearchConditionType,
+    ClassNameKey,
 } from '@/core/models';
 import { PersonTestModel } from '@/core/models/test';
 import { TableSearchService } from '@/core/services';
@@ -147,6 +148,9 @@ export default class TableSearchStorybook extends TableSearchService {
                           <Input
                               type="text"
                               className="quantity"
+                              inputProps={{
+                                  className: ClassNameKey.navigateToFocusActive,
+                              }}
                               defaultValue={value}
                               onClick={e => e.stopPropagation()}
                           />

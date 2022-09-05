@@ -1,4 +1,5 @@
 export * from './column/index';
+export * from './common/index';
 export * from './search/index';
 export * from './pagination/index';
 export * from './test/index';
