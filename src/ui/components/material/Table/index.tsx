@@ -482,11 +482,12 @@ export default function MaterialTable(props: TableProps) {
 
     useEffect(() => {
         if (!enableNavigateKeyboardEvent) return;
-        window.addEventListener('mousedown', handleMouseDown);
+
+        boardRef.current?.addEventListener('mousedown', handleMouseDown);
         window.addEventListener('keydown', handleKeyDown);
 
         return () => {
-            window.removeEventListener('mousedown', handleMouseDown);
+            boardRef.current?.removeEventListener('mousedown', handleMouseDown);
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [handleMouseDown, handleKeyDown]);

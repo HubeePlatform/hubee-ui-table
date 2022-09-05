@@ -149,7 +149,6 @@ export default class TableSearchStorybook extends TableSearchService {
                               className="quantity"
                               defaultValue={value}
                               onClick={e => e.stopPropagation()}
-                              onFocus={e => e.target.select()}
                           />
                       );
                   })

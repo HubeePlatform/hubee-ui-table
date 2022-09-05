@@ -27,7 +27,9 @@ export default class NavigatingService {
 
         if (element !== null && element !== undefined) {
             element.value = (Number(element?.value ?? '0') + 1).toString();
-            element.select();
+
+            element.focus();
+            element.setSelectionRange(0, element.value.length);
         }
     }
 
@@ -39,7 +41,9 @@ export default class NavigatingService {
         if (element !== null && element !== undefined) {
             const newValue = Number(element?.value ?? '0') - 1;
             element.value = newValue <= 0 ? '0' : newValue.toString();
-            element.select();
+
+            element.focus();
+            element.setSelectionRange(0, element.value.length);
         }
     }
 
@@ -49,7 +53,10 @@ export default class NavigatingService {
         ) as HTMLInputElement;
 
         if (element !== null && element !== undefined) {
-            element.select();
+            setTimeout(() => {
+                element.focus();
+                element.setSelectionRange(0, element.value.length);
+            }, 100);
         }
     }
 
