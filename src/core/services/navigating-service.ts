@@ -1,4 +1,5 @@
 import { ClassNameKey } from '@/core/models/common';
+import EventService from './event-service';
 
 export default class NavigatingService {
     static getCurrentIndex(): number {
@@ -28,7 +29,9 @@ export default class NavigatingService {
         ) as HTMLInputElement;
 
         if (element !== null && element !== undefined) {
-            element.value = (Number(element?.value ?? '0') + 1).toString();
+            const newValue = (Number(element?.value ?? '1') + 1).toString();
+            EventService.dispatchEventOnChange(newValue, element);
+            element.value = newValue;
 
             element.focus();
             element.setSelectionRange(0, element.value.length);
@@ -41,8 +44,12 @@ export default class NavigatingService {
         ) as HTMLInputElement;
 
         if (element !== null && element !== undefined) {
-            const newValue = Number(element?.value ?? '0') - 1;
-            element.value = newValue <= 0 ? '0' : newValue.toString();
+            const decrementValue = Number(element?.value ?? '0') - 1;
+            const newValue =
+                decrementValue <= 0 ? '1' : decrementValue.toString();
+
+            EventService.dispatchEventOnChange(newValue, element);
+            element.value = newValue;
 
             element.focus();
             element.setSelectionRange(0, element.value.length);

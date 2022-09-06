@@ -153,6 +153,9 @@ export default class TableSearchStorybook extends TableSearchService {
                               }}
                               defaultValue={value}
                               onClick={e => e.stopPropagation()}
+                              onChange={e =>
+                                  console.log('INPUT:quantity', e.target.value)
+                              }
                           />
                       );
                   })
