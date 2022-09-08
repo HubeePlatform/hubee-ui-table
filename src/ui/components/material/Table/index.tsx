@@ -104,7 +104,6 @@ export default function MaterialTable(props: TableProps) {
 
     const [navigatingState, setNavigatingState] = useState({
         enable: false,
-        isEditing: false,
     });
 
     const [controlRowSelectedState, setControlRowSelectedState] = useState({
@@ -352,17 +351,9 @@ export default function MaterialTable(props: TableProps) {
                     rows,
                 });
 
-                setNavigatingState({
-                    ...navigatingState,
-                    enable: true,
-                    isEditing: target?.className?.includes('input'),
-                });
+                setNavigatingState({ ...navigatingState, enable: true });
             } else {
-                setNavigatingState({
-                    ...navigatingState,
-                    enable: false,
-                    isEditing: false,
-                });
+                setNavigatingState({ ...navigatingState, enable: false });
             }
         },
         [boardRef, setNavigatingState, rows],

@@ -31,7 +31,7 @@ const TemplateLoadOnDemand: ComponentStory<typeof MaterialTable> = () => (
         }}
         paginationOptions={{
             enablePagination: false,
-            rowsPerPage: 10,
+            rowsPerPage: 5,
         }}
         styleOptions={{
             withTableInfoResult: false,
