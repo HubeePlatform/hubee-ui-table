@@ -11,7 +11,7 @@ export default {
     component: MaterialTable,
 } as ComponentMeta<typeof MaterialTable>;
 
-const TemplateInfiniteScroll: ComponentStory<typeof MaterialTable> = () => (
+const TemplateLoadOnDemand: ComponentStory<typeof MaterialTable> = () => (
     <MaterialTable
         service={new TableSearchStorybook(true)}
         rowOptions={{
@@ -24,8 +24,10 @@ const TemplateInfiniteScroll: ComponentStory<typeof MaterialTable> = () => (
             enableSearchModelRequestEvent: true,
             enableNavigateKeyboardEvent: true,
         }}
-        infiniteScrollOptions={{
-            enableInfiniteScroll: true,
+        loadOnDemandOptions={{
+            enableLoadOnDemand: true,
+            loadOnDemandShowLoading: true,
+            loadOnDemandInterval: 1000,
         }}
         paginationOptions={{
             enablePagination: false,
@@ -38,4 +40,4 @@ const TemplateInfiniteScroll: ComponentStory<typeof MaterialTable> = () => (
     />
 );
 
-export const WithInfiniteScroll = TemplateInfiniteScroll.bind({});
+export const WithLoadOnDemand = TemplateLoadOnDemand.bind({});

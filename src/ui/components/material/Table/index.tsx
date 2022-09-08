@@ -20,7 +20,7 @@ import {
     RowOptionsDefault,
     StyleOptionsDefault,
     TableEventOptions,
-    TableInfiniteScrollOptions,
+    LoadOnDemandOptions,
     TablePaginationOptions,
     TableProps,
     TablePropsDefault,
@@ -37,6 +37,7 @@ import {
 } from '@/ui/components';
 import {
     keyboardEventKey,
+    PaginationModel,
     SearchCriteriaModel,
     SearchModel,
     SearchResponseModel,
@@ -49,7 +50,6 @@ import {
     ContainerPaginationHeader,
 } from './styles';
 import _ from 'lodash';
-import InfiniteScroll from 'react-infinite-scroll-component';
 
 export default function MaterialTable(props: TableProps) {
     const tableProps = TablePropsDefault(props);
@@ -82,8 +82,11 @@ export default function MaterialTable(props: TableProps) {
         rowsPerPageOptions,
     } = tableProps.paginationOptions as TablePaginationOptions;
 
-    const { enableInfiniteScroll } =
-        tableProps.infiniteScrollOptions as TableInfiniteScrollOptions;
+    const {
+        enableLoadOnDemand,
+        loadOnDemandInterval,
+        loadOnDemandShowLoading,
+    } = tableProps.loadOnDemandOptions as LoadOnDemandOptions;
 
     const initialMount = useRef(true);
     const boardRef = useRef<HTMLDivElement>(null);
@@ -109,6 +112,12 @@ export default function MaterialTable(props: TableProps) {
         enableDispatchSelectedRowsEvent: true,
         visualizedRows: [] as any[],
         selectedFlatRows: [] as Row<any>[],
+    });
+
+    const [loadOnDemandState, setLoadOnDemandState] = useState({
+        enable: enableLoadOnDemand,
+        hasMore: false,
+        items: [] as any[],
     });
 
     const dispatchSelectedRowsEvent = useCallback(
@@ -273,14 +282,9 @@ export default function MaterialTable(props: TableProps) {
         }
 
         service.search<any>(searchModel).then(response => {
-            const currentValue = responseState.value.data;
-            const mergeData = (currentValue as any[]).concat(response.data);
-
             setResponseState({
                 ...responseState,
-                value: enableInfiniteScroll
-                    ? new SearchResponseModel(mergeData, response.page)
-                    : response,
+                value: response,
                 search: searchModel,
                 isLoading: false,
             });
@@ -291,21 +295,6 @@ export default function MaterialTable(props: TableProps) {
                 EventService.dispatchSearchModelRequestEvent(searchModel);
             }
         });
-    };
-
-    const handleInfiniteScrollNext = () => {
-        if (enableInfiniteScroll === false) return;
-
-        const searchModel = getCurrentSearchModel();
-        const { from, size } = responseState.value.page;
-        const currentIndex = from === 0 ? 0 : from / size;
-
-        searchModel.updatePagination(
-            currentIndex + 1,
-            requestState.rowsPerPage as number,
-        );
-
-        requestSearch(searchModel);
     };
 
     const handleOnChangePage = (event: any, newPage: number) => {
@@ -446,12 +435,69 @@ export default function MaterialTable(props: TableProps) {
         }
     }, [navigatingState]);
 
+    const startLoadOnDemand = useCallback(() => {
+        if (enableLoadOnDemand === false) return;
+        const searchModel = getCurrentSearchModel();
+
+        service.search<any>(searchModel).then(response => {
+            setLoadOnDemandState({
+                ...loadOnDemandState,
+                hasMore: true,
+                items: response.data,
+            });
+            controlRowSelectedDefaultValue(response.data);
+        });
+    }, []);
+
+    const handleLoadOnDemand = useCallback(() => {
+        if (!loadOnDemandState.enable || !loadOnDemandState.hasMore) return;
+
+        const currentValue = responseState.value.data as any[];
+        const allItems = loadOnDemandState.items;
+
+        const from = currentValue.length;
+        const size = rowsPerPage ?? 0;
+        const total = allItems.length;
+
+        const mergeData = (currentValue as any[]).concat(
+            allItems?.slice(from, from + size),
+        );
+
+        const hasMore = mergeData.length < total;
+
+        setTimeout(() => {
+            setResponseState({
+                ...responseState,
+                isLoading: loadOnDemandShowLoading === true && hasMore,
+                value: new SearchResponseModel(
+                    mergeData,
+                    new PaginationModel({ size: total, total: total }),
+                ),
+            });
+        }, loadOnDemandInterval);
+
+        if (!hasMore) {
+            setLoadOnDemandState({ ...loadOnDemandState, hasMore });
+            setPageSize(total);
+        }
+    }, [responseState.value, loadOnDemandState]);
+
     useEffect(onIsNavigatingChange, [navigatingState, onIsNavigatingChange]);
 
+    useEffect(handleLoadOnDemand, [
+        responseState,
+        loadOnDemandState,
+        handleLoadOnDemand,
+    ]);
+
     useEffect(() => {
-        const searchModel = getCurrentSearchModel();
-        searchModel.updateSearchCriteria(initialSearchModel.criterias);
-        requestSearch(searchModel);
+        if (!enableLoadOnDemand) {
+            const searchModel = getCurrentSearchModel();
+            searchModel.updateSearchCriteria(initialSearchModel.criterias);
+            requestSearch(searchModel);
+        } else {
+            startLoadOnDemand();
+        }
     }, []);
 
     useEffect(() => {
@@ -501,77 +547,24 @@ export default function MaterialTable(props: TableProps) {
                     />
                 </ContainerFilter>
             )}
-            <InfiniteScroll
-                className={`data-enable-infinite-scroll=${enableInfiniteScroll}`}
-                dataLength={responseState.value.page.total}
-                hasMore={
-                    enableInfiniteScroll === true &&
-                    responseState.value.page.from +
-                        responseState.value.page.size <=
-                        responseState.value.page.total
-                }
-                next={handleInfiniteScrollNext}
-                loader={<></>}
+
+            <ContainerTable
+                data-border={withContainerBorder}
+                data-border-sizing={withContainerBorderSizing}
+                data-zebra-striped={withZebraStriped}
+                data-enable-navigation={enableNavigateKeyboardEvent}
             >
-                <ContainerTable
-                    data-border={withContainerBorder}
-                    data-border-sizing={withContainerBorderSizing}
-                    data-zebra-striped={withZebraStriped}
-                    data-enable-navigation={enableNavigateKeyboardEvent}
-                >
-                    {enablePagination &&
-                        (withPaginationAtTop || withTableInfoResult) && (
-                            <ContainerPaginationHeader>
-                                {withTableInfoResult && (
-                                    <TableInfoResult
-                                        labelDisplayedResult={service.makeLabelDisplayedResult(
-                                            responseState.value,
-                                        )}
-                                    />
-                                )}
-                                {withPaginationAtTop && (
-                                    <Pagination
-                                        page={requestState.pageIndex}
-                                        rowsPerPage={
-                                            requestState.rowsPerPage as number
-                                        }
-                                        rowsPerPageOptions={
-                                            rowsPerPageOptions as number[]
-                                        }
-                                        count={responseState.value.page.total}
-                                        onPageChange={handleOnChangePage}
-                                        onRowsPerPageChange={
-                                            handleOnChangeRowsPerPage
-                                        }
-                                    />
-                                )}
-                            </ContainerPaginationHeader>
-                        )}
-                    <CssBaseline />
-                    <MaUTable
-                        {...getTableProps()}
-                        className={`material-table is-loading-${responseState.isLoading}`}
-                    >
-                        <TableHead className="material-table-head">
-                            <TheadMapRow
-                                headerGroups={headerGroups}
-                                enableActions={enableRowActions as boolean}
-                            />
-                        </TableHead>
-                        <TableBodyOperations
-                            count={responseState.value.page.total}
-                            isLoading={responseState.isLoading}
-                            rowsPerPage={requestState.rowsPerPage as number}
-                        />
-                        <TableBody className="material-table-body">
-                            <BodyMapRow
-                                rows={rows}
-                                prepareRow={prepareRow}
-                                rowOptions={RowOptionsDefault(rowOptions)}
-                            />
-                        </TableBody>
-                        <TableFooter>
-                            {enablePagination && (
+                {enablePagination &&
+                    (withPaginationAtTop || withTableInfoResult) && (
+                        <ContainerPaginationHeader>
+                            {withTableInfoResult && (
+                                <TableInfoResult
+                                    labelDisplayedResult={service.makeLabelDisplayedResult(
+                                        responseState.value,
+                                    )}
+                                />
+                            )}
+                            {withPaginationAtTop && (
                                 <Pagination
                                     page={requestState.pageIndex}
                                     rowsPerPage={
@@ -587,10 +580,47 @@ export default function MaterialTable(props: TableProps) {
                                     }
                                 />
                             )}
-                        </TableFooter>
-                    </MaUTable>
-                </ContainerTable>
-            </InfiniteScroll>
+                        </ContainerPaginationHeader>
+                    )}
+                <CssBaseline />
+                <MaUTable
+                    {...getTableProps()}
+                    className={`material-table is-loading-${responseState.isLoading}`}
+                >
+                    <TableHead className="material-table-head">
+                        <TheadMapRow
+                            headerGroups={headerGroups}
+                            enableActions={enableRowActions as boolean}
+                        />
+                    </TableHead>
+                    <TableBodyOperations
+                        count={responseState.value.page.total}
+                        isLoading={responseState.isLoading}
+                        rowsPerPage={requestState.rowsPerPage as number}
+                    />
+                    <TableBody className="material-table-body">
+                        <BodyMapRow
+                            rows={rows}
+                            prepareRow={prepareRow}
+                            rowOptions={RowOptionsDefault(rowOptions)}
+                        />
+                    </TableBody>
+                    <TableFooter>
+                        {enablePagination && (
+                            <Pagination
+                                page={requestState.pageIndex}
+                                rowsPerPage={requestState.rowsPerPage as number}
+                                rowsPerPageOptions={
+                                    rowsPerPageOptions as number[]
+                                }
+                                count={responseState.value.page.total}
+                                onPageChange={handleOnChangePage}
+                                onRowsPerPageChange={handleOnChangeRowsPerPage}
+                            />
+                        )}
+                    </TableFooter>
+                </MaUTable>
+            </ContainerTable>
         </ContainerRoot>
     );
 }

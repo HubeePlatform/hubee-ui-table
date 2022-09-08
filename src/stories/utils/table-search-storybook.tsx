@@ -61,7 +61,7 @@ export default class TableSearchStorybook extends TableSearchService {
         const newPerson = (index: any): PersonTestModel => {
             const statusChance = Math.random();
             return {
-                id: index === 0 ? 1 : Math.floor(Math.random() * 30),
+                id: `${Math.floor(Math.random() * 30)}${index}`,
                 rowDisabled: index === 0 ? true : false,
                 isSelectedValue: index === 0 || index === 2 ? true : false,
                 firstName: index === 0 ? ' Miranda' : MakeDataHelper.makeName(),
@@ -102,8 +102,8 @@ export default class TableSearchStorybook extends TableSearchService {
             makeDataLevel(),
             new PaginationModel({
                 from: searchModel.pagination.from,
-                size: 0,
-                total: 20,
+                size: searchModel.pagination.size,
+                total: 10,
             }),
         );
 
