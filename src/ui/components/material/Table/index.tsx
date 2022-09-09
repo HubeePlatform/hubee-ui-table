@@ -108,7 +108,7 @@ export default function MaterialTable(props: TableProps) {
 
     const [controlRowSelectedState, setControlRowSelectedState] = useState({
         active: !_.isEmpty(propertyNameForDefaultRowSelected),
-        enableDispatchSelectedRowsEvent: true,
+        enableDispatchSelectedRowsEvent: false,
         visualizedRows: [] as any[],
         selectedFlatRows: [] as Row<any>[],
     });
