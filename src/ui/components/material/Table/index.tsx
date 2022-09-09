@@ -469,7 +469,10 @@ export default function MaterialTable(props: TableProps) {
         if (!hasMore) {
             setLoadOnDemandState({ ...loadOnDemandState, hasMore });
             setPageSize(total);
-            controlRowSelectedDefaultValue(mergeData);
+
+            setTimeout(() => {
+                controlRowSelectedDefaultValue(mergeData);
+            }, 1000);
         }
     }, [responseState.value, loadOnDemandState]);
 
