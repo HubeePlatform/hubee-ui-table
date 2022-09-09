@@ -4,7 +4,6 @@ import { MaterialTable } from '@/ui/components/material';
 import TableSearchStorybook from '../utils/table-search-storybook';
 import StoryGroupTypes from '../utils/story-group-types';
 import { Sizing } from '@/core/models/common';
-import RowActionStorybook from '../utils/row-action-storybook';
 
 export default {
     title: StoryGroupTypes.MATERIAL_TABLE,
@@ -17,8 +16,8 @@ const TemplateLoadOnDemand: ComponentStory<typeof MaterialTable> = () => (
         rowOptions={{
             enableRowSelected: true,
             enableRowSelectedStyle: true,
-            enableRowActions: true,
-            rowActions: RowActionStorybook.makeActions(),
+            propertyNameForDisableRow: 'rowDisabled',
+            propertyNameForDefaultRowSelected: 'isSelectedValue',
         }}
         eventOptions={{
             enableSearchModelRequestEvent: true,

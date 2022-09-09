@@ -436,7 +436,6 @@ export default function MaterialTable(props: TableProps) {
                 hasMore: true,
                 items: response.data,
             });
-            controlRowSelectedDefaultValue(response.data);
         });
     }, []);
 
@@ -470,6 +469,7 @@ export default function MaterialTable(props: TableProps) {
         if (!hasMore) {
             setLoadOnDemandState({ ...loadOnDemandState, hasMore });
             setPageSize(total);
+            controlRowSelectedDefaultValue(mergeData);
         }
     }, [responseState.value, loadOnDemandState]);
 
