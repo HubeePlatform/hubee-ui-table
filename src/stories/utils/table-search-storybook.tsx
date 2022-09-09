@@ -63,7 +63,8 @@ export default class TableSearchStorybook extends TableSearchService {
             return {
                 id: `${Math.floor(Math.random() * 30)}${index}`,
                 rowDisabled: index === 0 ? true : false,
-                isSelectedValue: index === 0 || index === 2 ? true : false,
+                isSelectedValue:
+                    index === 0 || index === 2 || index === 3 ? true : false,
                 firstName: index === 0 ? ' Miranda' : MakeDataHelper.makeName(),
                 lastName: index === 0 ? 'Assis' : MakeDataHelper.makeName(),
                 price: index === 0 ? 29 : Math.floor(Math.random() * 30),

@@ -119,39 +119,6 @@ export default function MaterialTable(props: TableProps) {
         items: [] as any[],
     });
 
-    const dispatchSelectedRowsEvent = useCallback(
-        (
-            selectedRowIds: Record<string, boolean>,
-            selectedFlatRows: Row<any>[],
-        ) => {
-            const rowIds = Object.keys(selectedRowIds);
-            const current = [...controlRowSelectedState.selectedFlatRows];
-            const currentIds = current.map(x => x.original.id);
-
-            current.push(
-                ...selectedFlatRows
-                    .filter(x => !current.includes(x))
-                    .filter(x => !currentIds.includes(x.original.id)),
-            );
-
-            const distinct = (value: any, index: number, self: any) => {
-                return self.indexOf(value) === index;
-            };
-
-            const values = current
-                .filter(distinct)
-                .filter(x => rowIds.includes(`${x.original.id}`));
-
-            setControlRowSelectedState({
-                ...controlRowSelectedState,
-                selectedFlatRows: values,
-            });
-
-            EventService.dispatchSelectedRowsEvent(selectedRowIds, values);
-        },
-        [controlRowSelectedState.selectedFlatRows],
-    );
-
     const columns = React.useMemo<Column<any>[]>(
         () => ColumnService.makeModelToColumn(service.makeColumns()),
         [],
@@ -232,6 +199,39 @@ export default function MaterialTable(props: TableProps) {
         );
         return searchModel;
     };
+
+    const dispatchSelectedRowsEvent = useCallback(
+        (
+            selectedRowIds: Record<string, boolean>,
+            selectedFlatRows: Row<any>[],
+        ) => {
+            const rowIds = Object.keys(selectedRowIds);
+            const current = [...controlRowSelectedState.selectedFlatRows];
+            const currentIds = current.map(x => x.original.id);
+
+            current.push(
+                ...selectedFlatRows
+                    .filter(x => !current.includes(x))
+                    .filter(x => !currentIds.includes(x.original.id)),
+            );
+
+            const distinct = (value: any, index: number, self: any) => {
+                return self.indexOf(value) === index;
+            };
+
+            const values = current
+                .filter(distinct)
+                .filter(x => rowIds.includes(`${x.original.id}`));
+
+            setControlRowSelectedState({
+                ...controlRowSelectedState,
+                selectedFlatRows: values,
+            });
+
+            EventService.dispatchSelectedRowsEvent(selectedRowIds, values);
+        },
+        [controlRowSelectedState, selectedFlatRows],
+    );
 
     const controlRowSelectedDefaultValue = (responseData: any[]) => {
         if (controlRowSelectedState.active && !_.isEmpty(responseData)) {
