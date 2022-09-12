@@ -4,4 +4,5 @@ export default class EventKey {
     static searchModelRequestEvent = `${this.baseKey}SearchModelRequestWasChangedEvent`;
     static navigateBetweenRowWasChangedEvent = `${this.baseKey}NavigateBetweenRowWasChangedEvent`;
     static rowNavigateWasDeletedEvent = `${this.baseKey}RowNavigateWasDeletedEvent`;
+    static loadOnDemandFinishedEvent = `${this.baseKey}LoadOnDemandFinishedEvent`;
 }

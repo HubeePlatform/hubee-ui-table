@@ -60,6 +60,14 @@ export default class EventService {
         document.dispatchEvent(event);
     }
 
+    static dispatchLoadOnDemandFinishedEvent(): void {
+        const event = new CustomEvent<any>(EventKey.loadOnDemandFinishedEvent, {
+            detail: { status: 'finished' },
+        });
+
+        document.dispatchEvent(event);
+    }
+
     static dispatchEventOnChange(value: any, input: HTMLInputElement): void {
         if (window === undefined || input === undefined) return;
 

@@ -469,6 +469,7 @@ export default function MaterialTable(props: TableProps) {
 
             setTimeout(() => {
                 controlRowSelectedDefaultValue(mergeData);
+                EventService.dispatchLoadOnDemandFinishedEvent();
             }, 1000);
         }
     }, [responseState.value, loadOnDemandState]);
