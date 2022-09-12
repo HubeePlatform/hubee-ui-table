@@ -404,10 +404,7 @@ export default function MaterialTable(props: TableProps) {
                     break;
 
                 case keyboardEventKey.DELETE: {
-                    if (rowId.length <= 0) {
-                        EventService.dispatchRowNavigateWasDeletedEvent(rowId);
-                    }
-
+                    EventService.dispatchRowNavigateWasDeletedEvent(rowId);
                     break;
                 }
                 default:
