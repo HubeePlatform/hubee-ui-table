@@ -73,6 +73,7 @@ export default function MaterialTable(props: TableProps) {
         withContainerBorderSizing,
         withZebraStriped,
         withTableInfoResult,
+        classNameRoot,
     } = tableProps.styleOptions as TableStyleOptions;
 
     const {
@@ -531,7 +532,12 @@ export default function MaterialTable(props: TableProps) {
     }, [handleMouseDown, handleKeyDown]);
 
     return (
-        <ContainerRoot ref={boardRef}>
+        <ContainerRoot
+            ref={boardRef}
+            className={`container-root-ui-table${
+                _.isEmpty(classNameRoot) ? '' : ' ' + classNameRoot
+            }`}
+        >
             {GlobalFilterComponent !== undefined && (
                 <ContainerFilter>
                     <GlobalFilterComponent

@@ -17,6 +17,7 @@ const TemplateWithZebraStriped: ComponentStory<typeof MaterialTable> = () => (
             withZebraStriped: true,
             withTableInfoResult: false,
             withContainerBorderSizing: Sizing.SMALL,
+            classNameRoot: 'zebra',
         }}
         paginationOptions={{
             rowsPerPage: 6,
