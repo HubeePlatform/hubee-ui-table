@@ -318,11 +318,17 @@ export default function MaterialTable(props: TableProps) {
         });
     };
 
-    const handleOnChangeQuery = (criterias: SearchCriteriaModel[]) => {
+    const handleOnChangeQuery = (
+        criterias: SearchCriteriaModel[],
+        resetPage: boolean,
+    ) => {
         const searchModel = getCurrentSearchModel();
         searchModel.updateSearchCriteria(criterias);
 
-        if (requestState.pageIndex !== 0) {
+        if (
+            requestState.pageIndex !== 0 &&
+            (resetPage === undefined || resetPage === true)
+        ) {
             setResponseState({
                 ...responseState,
                 search: searchModel,
