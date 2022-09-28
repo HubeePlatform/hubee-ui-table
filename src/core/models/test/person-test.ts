@@ -1,5 +1,5 @@
 export default interface PersonTestModel {
-    id: number;
+    id: any;
     firstName: string;
     lastName: string;
     age: number;

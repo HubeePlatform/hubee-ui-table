@@ -12,7 +12,6 @@ export default {
 const TemplateWithFilter: ComponentStory<typeof MaterialTable> = () => (
     <MaterialTable
         service={new TableSearchStorybook()}
-        rowsPerPage={10}
         GlobalFilterComponent={SearchDefault}
     />
 );

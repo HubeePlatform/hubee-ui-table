@@ -10,7 +10,7 @@ export default function SearchDefault(props: GlobalFilterProps): JSX.Element {
 
     const handleOnchange = (value: string) => {
         const criteria = new SearchCriteriaModel('searchInput', { value });
-        onChangeQuery([criteria]);
+        onChangeQuery([criteria], false);
     };
 
     return (

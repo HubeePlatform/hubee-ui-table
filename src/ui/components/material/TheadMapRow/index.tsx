@@ -21,8 +21,12 @@ export default function TheadMapRow(props: TheadMapRowProps): JSX.Element {
                 >
                     {headerGroup.headers.map((column, index) => (
                         <>
-                            <TableCellSorting column={column} />
+                            <TableCellSorting
+                                key={`table-cell-sorting-${index}`}
+                                column={column}
+                            />
                             <TheadCellAction
+                                key={`thead-cell-action-${index}`}
                                 isLastCell={
                                     headerGroup.headers.length === index + 1
                                 }

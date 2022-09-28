@@ -10,7 +10,7 @@ export default {
 } as ComponentMeta<typeof MaterialTable>;
 
 const Template: ComponentStory<typeof MaterialTable> = () => (
-    <MaterialTable service={new TableSearchStorybook()} rowsPerPage={5} />
+    <MaterialTable service={new TableSearchStorybook()} />
 );
 
 export const Default = Template.bind({});

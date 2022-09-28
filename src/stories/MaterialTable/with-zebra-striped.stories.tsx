@@ -10,12 +10,14 @@ export default {
     component: MaterialTable,
 } as ComponentMeta<typeof MaterialTable>;
 
-const TemplateSimpleTable: ComponentStory<typeof MaterialTable> = () => (
+const TemplateWithZebraStriped: ComponentStory<typeof MaterialTable> = () => (
     <MaterialTable
         service={new TableSearchStorybook()}
         styleOptions={{
+            withZebraStriped: true,
             withTableInfoResult: false,
             withContainerBorderSizing: Sizing.SMALL,
+            classNameRoot: 'zebra',
         }}
         paginationOptions={{
             rowsPerPage: 6,
@@ -25,4 +27,4 @@ const TemplateSimpleTable: ComponentStory<typeof MaterialTable> = () => (
     />
 );
 
-export const SimpleTable = TemplateSimpleTable.bind({});
+export const WithZebraStriped = TemplateWithZebraStriped.bind({});

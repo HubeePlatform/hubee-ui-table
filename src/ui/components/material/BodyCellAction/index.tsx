@@ -1,6 +1,7 @@
 import { Action } from '@/core/interfaces';
-import { TableCell } from './styles';
+import { Button, ContainerAction, TableCell } from './styles';
 import React from 'react';
+import Icon from '@mui/material/Icon';
 import { IconButton } from '@mui/material';
 import { TableIconsMaterial } from '@/core/models/table';
 
@@ -29,25 +30,55 @@ export default function BodyCellAction(props: BodyCellActionProps) {
     const makeClassName = (action: Action<any>) =>
         isDisabled(action) ? 'action-disabled' : 'action';
 
+    const makeIcon = (icon: string) => {
+        const element = TableIconsMaterial.get(icon);
+
+        if (element === undefined) {
+            return <Icon>{icon}</Icon>;
+        }
+
+        return element;
+    };
+
     return (
         <TableCell className="table-cell-action-body">
             <div className="row-action">
                 {actions.map(
                     x =>
                         !isHidden(x) && (
-                            <div
+                            <ContainerAction
+                                key={`container-${x.icon}`}
                                 title={makeTitle(x)}
                                 className={makeClassName(x)}
                             >
-                                <IconButton
-                                    key={x.icon}
-                                    title={makeTitle(x)}
-                                    onClick={event => x.onClick(event, rowData)}
-                                    disabled={isDisabled(x)}
-                                >
-                                    {TableIconsMaterial.get(x.icon)}
-                                </IconButton>
-                            </div>
+                                {x.isButton !== true && (
+                                    <IconButton
+                                        key={x.icon}
+                                        title={makeTitle(x)}
+                                        onClick={event => {
+                                            event.stopPropagation();
+                                            x.onClick(event, rowData);
+                                        }}
+                                        disabled={isDisabled(x)}
+                                    >
+                                        {makeIcon(x.icon)}
+                                    </IconButton>
+                                )}
+
+                                {x.isButton == true && (
+                                    <Button
+                                        key={x.buttonName}
+                                        variant="outlined"
+                                        onClick={event => {
+                                            event.stopPropagation();
+                                            x.onClick(event, rowData);
+                                        }}
+                                        disabled={isDisabled(x)}
+                                    >
+                                        {x.buttonName}
+                                    </Button>
+                                )}
+                            </ContainerAction>
                         ),
                 )}
             </div>

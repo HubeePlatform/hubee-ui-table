@@ -21,6 +21,7 @@ export default function TableCellSorting(
                           title: column.Header as string,
                       }),
                   ))}
+            align={column['align'] ?? 'left'}
             style={{
                 width: column.width ?? '1%',
                 maxWidth: column.maxWidth ?? column.width,

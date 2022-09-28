@@ -1,31 +1,63 @@
-import { TableRow } from '@mui/material';
 import React from 'react';
 import { Row } from 'react-table';
 import TableCell from '@mui/material/TableCell';
 import { BodyCellAction } from '@/ui/components';
-import { Action } from '@/core/interfaces';
+import { Action, TableRowOptions } from '@/core/interfaces';
+import { TableRowContainer } from './styles';
 
 interface BodyMapRowProps {
     rows: Row<any>[];
     prepareRow: (row: Row<any>) => void;
     actions?: Action<any>[];
+    rowOptions: TableRowOptions;
 }
 
 export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
-    const { actions, rows, prepareRow } = props;
+    const { rows, prepareRow } = props;
+    const { rowActions, enableRowSelectedStyle } = props.rowOptions;
+
+    const enableRowAction = () => {
+        if (rowActions === null || rowActions === undefined) return false;
+
+        const action = rowActions?.find(x => x.isRowActionOnClick);
+        if (action === undefined || action === null) return false;
+
+        return true;
+    };
+
+    const handleOnClick = (event: any, row: Row<any>) => {
+        event.stopPropagation();
+
+        if (!enableRowAction()) return;
+
+        const action = rowActions?.find(x => x.isRowActionOnClick);
+        action?.onClick(event, row.original);
+    };
 
     return (
         <>
             {rows.map((row, index) => {
                 prepareRow(row);
                 return (
-                    <TableRow {...row.getRowProps()} key={`body-rows-${index}`}>
+                    <TableRowContainer
+                        {...row.getRowProps()}
+                        key={`body-rows-${index}`}
+                        data-id={row.id}
+                        data-index={index}
+                        data-is-selected={row.isSelected}
+                        data-enable-row-selected-style={enableRowSelectedStyle}
+                        data-enable-row-action={enableRowAction()}
+                        onClick={e => handleOnClick(e, row)}
+                    >
                         {row.cells.map((cell, index) => {
                             return (
                                 <>
                                     <TableCell
-                                        title={cell?.value}
-                                        {...cell.getCellProps()}
+                                        align={cell.column['align'] ?? 'left'}
+                                        title={`${cell?.value ?? ''}`}
+                                        {...cell.getCellProps({
+                                            key: `table-cell${index}`,
+                                        })}
                                         style={{
                                             width: cell.column.width ?? '1%',
                                             maxWidth:
@@ -36,16 +68,17 @@ export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
                                         {cell.render('Cell')}
                                     </TableCell>
                                     <BodyCellAction
+                                        key={`body-cell-action-${index}`}
                                         isLastCell={
                                             row.cells.length === index + 1
                                         }
-                                        actions={actions}
+                                        actions={rowActions}
                                         rowData={cell.row?.original}
                                     />
                                 </>
                             );
                         })}
-                    </TableRow>
+                    </TableRowContainer>
                 );
             })}
         </>

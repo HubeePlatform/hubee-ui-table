@@ -15,12 +15,37 @@ export const ContainerTable = styled.div`
     display: inline-table;
     width: 100%;
 
-    &.with-border-true {
+    &&[data-zebra-striped='true'] {
+        tbody {
+            tr:nth-child(odd) {
+                background-color: #f4f4f4;
+            }
+        }
+    }
+
+    &&[data-border='true'] {
         min-height: 500px;
         padding-left: 16px;
         padding-right: 16px;
-        padding-bottom: 140px;
         border: 1px solid #cccccc;
+    }
+
+    &&[data-border-sizing='small'] {
+        padding-bottom: 0px;
+    }
+
+    &&[data-border='true'][data-border-sizing='small'] {
+        min-height: 364px;
+    }
+
+    &&[data-border-sizing='medium'] {
+        padding-bottom: 140px;
+    }
+
+    input[type='checkbox'].table-cell-select {
+        accent-color: #1580ae;
+        height: 18px;
+        width: 18px;
     }
 
     .material-table-head {
@@ -45,7 +70,7 @@ export const ContainerTable = styled.div`
 
         .table-cell-action-body {
             width: 1% !important;
-            min-width: 140px !important;
+            min-width: 152px !important;
             padding-top: 4px !important;
             padding-bottom: 4px !important;
         }
@@ -80,7 +105,17 @@ export const ContainerTable = styled.div`
                 border-top-style: solid;
             }
 
+            tr.navigation-active-row td:first-of-type {
+                border-left-style: solid;
+                border-top-style: solid;
+            }
+
             tr:hover td:last-child {
+                border-right-style: solid;
+                border-top-style: solid;
+            }
+
+            tr.navigation-active-row td:last-child {
                 border-right-style: solid;
                 border-top-style: solid;
             }
@@ -90,8 +125,17 @@ export const ContainerTable = styled.div`
                 border-style: solid none;
             }
 
+            tr.navigation-active-row td {
+                border: 1.2px solid rgba(0, 0, 0, 0.6);
+                border-style: solid none;
+            }
+
             tr:hover .row-action {
                 visibility: visible;
+            }
+
+            tr.navigation-active-row .row-action {
+                visibility: visible !important;
             }
         }
     }
@@ -107,6 +151,7 @@ export const ContainerFilter = styled.div`
 
 export const ContainerPaginationHeader = styled(ContainerBase)`
     &.MuiContainer-root {
+        height: 52px;
         margin: 0;
         padding: 0;
         display: flex;
