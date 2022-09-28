@@ -23,7 +23,17 @@ export default class NavigatingService {
         return element?.getAttribute('data-id') ?? '';
     }
 
+    static isQuantityOnFocus = () => {
+        return (
+            document.querySelector(
+                'tr.navigation-active-row .quantity input:focus',
+            ) !== null
+        );
+    };
+
     static quantityIncrement(): void {
+        if (!NavigatingService.isQuantityOnFocus()) return;
+
         const element = document.querySelector(
             'tr.navigation-active-row .quantity input',
         ) as HTMLInputElement;
@@ -39,6 +49,8 @@ export default class NavigatingService {
     }
 
     static quantityDecrement(): void {
+        if (!NavigatingService.isQuantityOnFocus()) return;
+
         const element = document.querySelector(
             'tr.navigation-active-row .quantity input',
         ) as HTMLInputElement;
@@ -56,10 +68,15 @@ export default class NavigatingService {
         }
     }
 
-    static focusToActive(): void {
-        const element = document.querySelector(
-            'tr.navigation-active-row .quantity input',
-        ) as HTMLInputElement;
+    static focusToActive(onMouseDown: boolean): void {
+        const currentTabIndex = NavigatingService.getTabIndexByInputFocus();
+
+        const query =
+            currentTabIndex !== -1 && !onMouseDown
+                ? `tr.navigation-active-row input[tabindex="${currentTabIndex}"]`
+                : 'tr.navigation-active-row .quantity input';
+
+        const element = document.querySelector(query) as HTMLInputElement;
 
         if (element !== null && element !== undefined) {
             setTimeout(() => {
@@ -87,29 +104,73 @@ export default class NavigatingService {
             element?.classList?.contains(ClassNameKey.navigateToFocusActive) ===
                 true;
 
-        NavigatingService.navigateTo(index, focusToActive);
+        NavigatingService.navigateTo(index, focusToActive, true);
         return index;
     }
 
-    static navigateTo(index: number, focusToActive = true): boolean {
-        const makeQuerySelector = (index: number) => {
-            return `div[data-enable-navigation="true"] tr[data-index="${index}"]`;
-        };
+    static makeQuerySelectorByRowIndex = (index: number) => {
+        return `div[data-enable-navigation="true"] tr[data-index="${index}"]`;
+    };
 
-        const element = document.querySelector(makeQuerySelector(index));
+    static getNextInputFocus = (): HTMLInputElement => {
+        const currentIndex = NavigatingService.getCurrentIndex();
+
+        return document.querySelector(
+            NavigatingService.makeQuerySelectorByRowIndex(currentIndex) +
+                ' input.MuiInputBase-input:not(:focus)',
+        ) as HTMLInputElement;
+    };
+
+    static getTabIndexByInputFocus = (): number => {
+        const currentFocusElement = document.querySelector(
+            'div[data-enable-navigation="true"] input.MuiInputBase-input:focus',
+        ) as HTMLInputElement;
+
+        if (currentFocusElement === undefined || currentFocusElement == null)
+            return -1;
+
+        return Number(currentFocusElement.tabIndex);
+    };
+
+    static navigateTo(
+        index: number,
+        focusToActive = true,
+        onMouseDown = false,
+    ): boolean {
+        const element = document.querySelector(
+            NavigatingService.makeQuerySelectorByRowIndex(index),
+        );
         if (element === null || element === undefined) return false;
 
         NavigatingService.remove();
 
         document
-            .querySelector(makeQuerySelector(index))
+            .querySelector(NavigatingService.makeQuerySelectorByRowIndex(index))
             ?.classList?.add('navigation-active-row');
 
         if (focusToActive) {
-            NavigatingService.focusToActive();
+            NavigatingService.focusToActive(onMouseDown);
         }
 
         return true;
+    }
+
+    static tabNavidateTo(): void {
+        const nextInputFocus = NavigatingService.getNextInputFocus();
+        if (nextInputFocus === undefined) return;
+
+        nextInputFocus.focus();
+        nextInputFocus.setSelectionRange(0, nextInputFocus.value.length);
+    }
+
+    static toggleSelectionByRowActive(): void {
+        const element = document.querySelector(
+            'tr.navigation-active-row .table-cell-select',
+        ) as HTMLInputElement;
+
+        if (element === undefined || element === null) return;
+
+        element.click();
     }
 
     static remove(): void {

@@ -1,6 +1,6 @@
 {
   "name": "@hubee/hubee-ui-table",
-  "version": "1.0.42",
+  "version": "1.0.44",
   "description": "Hubee UI Table é uma biblioteca que faz abstração da implementação de data tables para o React",
   "main": "dist/index.js",
   "module": "dist/esm/index.js",

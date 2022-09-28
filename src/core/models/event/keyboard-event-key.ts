@@ -4,4 +4,6 @@ export enum keyboardEventKey {
     ARROW_RIGHT = 'ArrowRight',
     ARROW_LEFT = 'ArrowLeft',
     DELETE = 'Delete',
+    TAB = 'Tab',
+    SPACE = 'Space',
 }

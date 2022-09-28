@@ -131,6 +131,9 @@ export default class TableSearchStorybook extends TableSearchService {
                           <Input
                               type="text"
                               defaultValue={value}
+                              inputProps={{
+                                  tabIndex: 1,
+                              }}
                               onClick={e => e.stopPropagation()}
                           />
                       );
@@ -151,6 +154,7 @@ export default class TableSearchStorybook extends TableSearchService {
                               className="quantity"
                               inputProps={{
                                   className: ClassNameKey.navigateToFocusActive,
+                                  tabIndex: 2,
                               }}
                               defaultValue={value}
                               onClick={e => e.stopPropagation()}

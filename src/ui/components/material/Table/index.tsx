@@ -366,14 +366,23 @@ export default function MaterialTable(props: TableProps) {
         [boardRef, setNavigatingState, rows],
     );
 
+    //TODO: temporary
     const handleKeyDown = useCallback(
         (event: KeyboardEvent) => {
             if (!navigatingState.enable) return;
 
+            const elementBackdrop = document.getElementsByClassName(
+                'backdrop',
+            )[0] as HTMLDivElement;
+
+            if (elementBackdrop !== undefined) {
+                if (elementBackdrop.style.visibility !== 'hidden') return;
+            }
+
             const currentIndex = NavigatingService.getCurrentIndex();
             const rowId = NavigatingService.getRowId();
 
-            switch (event.key) {
+            switch (event.code) {
                 case keyboardEventKey.ARROW_UP: {
                     const nextIndex = currentIndex - 1;
 
@@ -412,6 +421,18 @@ export default function MaterialTable(props: TableProps) {
 
                 case keyboardEventKey.DELETE: {
                     EventService.dispatchRowNavigateWasDeletedEvent(rowId);
+                    break;
+                }
+
+                case keyboardEventKey.TAB: {
+                    event.preventDefault();
+                    NavigatingService.tabNavidateTo();
+                    break;
+                }
+
+                case keyboardEventKey.SPACE: {
+                    event.preventDefault();
+                    NavigatingService.toggleSelectionByRowActive();
                     break;
                 }
                 default:
@@ -477,7 +498,7 @@ export default function MaterialTable(props: TableProps) {
             setTimeout(() => {
                 controlRowSelectedDefaultValue(mergeData);
                 EventService.dispatchLoadOnDemandFinishedEvent();
-            }, 1000);
+            }, 600);
         }
     }, [responseState.value, loadOnDemandState]);
 
