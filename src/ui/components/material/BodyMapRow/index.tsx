@@ -14,7 +14,8 @@ interface BodyMapRowProps {
 
 export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
     const { rows, prepareRow } = props;
-    const { rowActions, enableRowSelectedStyle } = props.rowOptions;
+    const { rowActions, enableRowSelectedStyle, enableRowActions } =
+        props.rowOptions;
 
     const enableRowAction = () => {
         if (rowActions === null || rowActions === undefined) return false;
@@ -67,14 +68,16 @@ export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
                                     >
                                         {cell.render('Cell')}
                                     </TableCell>
-                                    <BodyCellAction
-                                        key={`body-cell-action-${index}`}
-                                        isLastCell={
-                                            row.cells.length === index + 1
-                                        }
-                                        actions={rowActions}
-                                        rowData={cell.row?.original}
-                                    />
+                                    {enableRowActions && (
+                                        <BodyCellAction
+                                            key={`body-cell-action-${index}`}
+                                            isLastCell={
+                                                row.cells.length === index + 1
+                                            }
+                                            actions={rowActions}
+                                            rowData={cell.row?.original}
+                                        />
+                                    )}
                                 </>
                             );
                         })}

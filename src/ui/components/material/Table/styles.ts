@@ -92,7 +92,7 @@ export const ContainerTable = styled.div`
             }
 
             tr {
-                min-height: 48px;
+                height: 48px;
             }
 
             td:first-of-type {

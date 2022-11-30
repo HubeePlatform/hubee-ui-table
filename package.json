@@ -1,6 +1,6 @@
 {
   "name": "@hubee/hubee-ui-table",
-  "version": "1.0.44",
+  "version": "1.0.45",
   "description": "Hubee UI Table é uma biblioteca que faz abstração da implementação de data tables para o React",
   "main": "dist/index.js",
   "module": "dist/esm/index.js",
@@ -43,7 +43,7 @@
     "@rollup/plugin-alias": "^3.1.9",
     "@rollup/plugin-commonjs": "^22.0.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
-    "@rollup/plugin-typescript": "^8.3.2",
+    "@rollup/plugin-typescript": "8.3.2",
     "@storybook/addon-actions": "^6.4.22",
     "@storybook/addon-essentials": "^6.4.22",
     "@storybook/addon-interactions": "^6.4.22",

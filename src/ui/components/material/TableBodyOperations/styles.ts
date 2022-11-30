@@ -17,7 +17,7 @@ export const TableBody = styled(Body)`
     }
 
     tr {
-        min-height: 48px;
+        height: 48px;
     }
 
     td {
