@@ -54,8 +54,8 @@ import _ from 'lodash';
 export default function MaterialTable(props: TableProps) {
     const tableProps = TablePropsDefault(props);
 
-    const { service, GlobalFilterComponent, rowOptions, paginationOptions } =
-        tableProps;
+    const { service, rowOptions, paginationOptions } = tableProps;
+    const { GlobalFilterComponent, HeaderComponent } = tableProps;
     service.setTableProps(tableProps);
 
     const { enableSearchModelRequestEvent, enableNavigateKeyboardEvent } =
@@ -579,6 +579,7 @@ export default function MaterialTable(props: TableProps) {
                 data-zebra-striped={withZebraStriped}
                 data-enable-navigation={enableNavigateKeyboardEvent}
             >
+                {HeaderComponent !== undefined && <HeaderComponent />}
                 {enablePagination &&
                     (withPaginationAtTop || withTableInfoResult) && (
                         <ContainerPaginationHeader>

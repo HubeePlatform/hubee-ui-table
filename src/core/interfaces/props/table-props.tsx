@@ -5,6 +5,7 @@ import {
     ITableSearchService,
     TableEventOptions,
     LoadOnDemandOptions,
+    IHeaderComponent,
 } from '@/core/interfaces';
 import {
     PaginationOptionsDefault,
@@ -19,6 +20,7 @@ import {
 export interface TableProps {
     service: ITableSearchService;
     GlobalFilterComponent?: IGlobalFilterComponent;
+    HeaderComponent?: IHeaderComponent;
     paginationOptions?: TablePaginationOptions;
     styleOptions?: TableStyleOptions;
     rowOptions?: TableRowOptions;
@@ -30,6 +32,7 @@ export const TablePropsDefault = (props: TableProps) => {
     return {
         service: props.service,
         GlobalFilterComponent: props.GlobalFilterComponent,
+        HeaderComponent: props.HeaderComponent,
         paginationOptions: PaginationOptionsDefault(props.paginationOptions),
         rowOptions: RowOptionsDefault(props.rowOptions),
         styleOptions: StyleOptionsDefault(props.styleOptions),
