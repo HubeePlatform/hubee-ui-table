@@ -49,7 +49,6 @@ export default class SearchModel {
     }
 
     updateSearchCriteria(criterias: SearchCriteriaModel[]): void {
-        if (criterias.length === 0) return;
         this.criterias = criterias;
     }
 
