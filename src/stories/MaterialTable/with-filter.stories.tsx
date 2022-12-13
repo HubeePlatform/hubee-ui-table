@@ -13,6 +13,7 @@ const TemplateWithFilter: ComponentStory<typeof MaterialTable> = () => (
     <MaterialTable
         service={new TableSearchStorybook()}
         GlobalFilterComponent={SearchDefault}
+        styleOptions={{ globalFilterWithContainerBorder: true }}
     />
 );
 

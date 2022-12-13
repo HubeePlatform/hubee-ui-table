@@ -74,6 +74,7 @@ export default function MaterialTable(props: TableProps) {
         withZebraStriped,
         withTableInfoResult,
         classNameRoot,
+        globalFilterWithContainerBorder,
     } = tableProps.styleOptions as TableStyleOptions;
 
     const {
@@ -565,13 +566,21 @@ export default function MaterialTable(props: TableProps) {
                 _.isEmpty(classNameRoot) ? '' : ' ' + classNameRoot
             }`}
         >
-            {GlobalFilterComponent !== undefined && (
-                <ContainerFilter>
+            {GlobalFilterComponent !== undefined &&
+                globalFilterWithContainerBorder && (
+                    <ContainerFilter>
+                        <GlobalFilterComponent
+                            onChangeQuery={handleOnChangeQuery}
+                        />
+                    </ContainerFilter>
+                )}
+
+            {GlobalFilterComponent !== undefined &&
+                !globalFilterWithContainerBorder && (
                     <GlobalFilterComponent
                         onChangeQuery={handleOnChangeQuery}
                     />
-                </ContainerFilter>
-            )}
+                )}
 
             <ContainerTable
                 data-border={withContainerBorder}
