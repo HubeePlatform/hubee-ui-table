@@ -16,6 +16,7 @@ const TemplateSimpleTable: ComponentStory<typeof MaterialTable> = () => (
         styleOptions={{
             withTableInfoResult: false,
             withContainerBorderSizing: Sizing.SMALL,
+            borderInCell: true,
         }}
         paginationOptions={{
             rowsPerPage: 6,

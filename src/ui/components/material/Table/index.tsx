@@ -75,6 +75,7 @@ export default function MaterialTable(props: TableProps) {
         withTableInfoResult,
         classNameRoot,
         globalFilterWithContainerBorder,
+        borderInCell,
     } = tableProps.styleOptions as TableStyleOptions;
 
     const {
@@ -587,6 +588,7 @@ export default function MaterialTable(props: TableProps) {
                 data-border-sizing={withContainerBorderSizing}
                 data-zebra-striped={withZebraStriped}
                 data-enable-navigation={enableNavigateKeyboardEvent}
+                data-border-cell={borderInCell}
             >
                 {HeaderComponent !== undefined && <HeaderComponent />}
                 {enablePagination &&

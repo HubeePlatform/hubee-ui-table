@@ -42,6 +42,14 @@ export const ContainerTable = styled.div`
         padding-bottom: 140px;
     }
 
+    &&[data-border-cell='true'] {
+        tbody {
+            tr td:hover {
+                border: 2px solid #1580ae;
+            }
+        }
+    }
+
     input[type='checkbox'].table-cell-select {
         accent-color: #1580ae;
         height: 18px;

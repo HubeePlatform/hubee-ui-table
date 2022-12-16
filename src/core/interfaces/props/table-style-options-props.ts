@@ -7,6 +7,7 @@ export interface TableStyleOptions {
     withTableInfoResult?: boolean;
     withZebraStriped?: boolean;
     classNameRoot?: string;
+    borderInCell?: boolean;
 }
 
 export const StyleOptionsDefault = (options?: TableStyleOptions) => {
@@ -19,5 +20,6 @@ export const StyleOptionsDefault = (options?: TableStyleOptions) => {
             options?.withContainerBorderSizing ?? Sizing.MEDIUM,
         withTableInfoResult: options?.withTableInfoResult ?? true,
         withZebraStriped: options?.withZebraStriped ?? false,
+        borderInCell: options?.borderInCell ?? false,
     } as TableStyleOptions;
 };
