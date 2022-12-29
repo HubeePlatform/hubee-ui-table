@@ -17,6 +17,7 @@ const TemplateWithActions: ComponentStory<typeof MaterialTable> = () => (
         rowOptions={{
             enableRowActions: true,
             rowActions: RowActionStorybook.makeActions(),
+            enableRowTitle: false,
         }}
         styleOptions={{ withContainerBorderSizing: Sizing.SMALL }}
     />

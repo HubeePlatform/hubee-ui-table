@@ -119,7 +119,7 @@ export default class TableSearchStorybook extends TableSearchService {
                 width: 152,
                 maxWidth: 152,
             }).withRender((value: string) => {
-                return <span>{value}</span>;
+                return <span title={value}>{value}</span>;
             }),
 
             this.renderInput

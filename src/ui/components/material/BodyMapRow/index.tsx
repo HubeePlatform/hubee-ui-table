@@ -1,5 +1,5 @@
 import React from 'react';
-import { Row } from 'react-table';
+import { Cell, Row } from 'react-table';
 import TableCell from '@mui/material/TableCell';
 import { BodyCellAction } from '@/ui/components';
 import { Action, TableRowOptions } from '@/core/interfaces';
@@ -14,8 +14,12 @@ interface BodyMapRowProps {
 
 export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
     const { rows, prepareRow } = props;
-    const { rowActions, enableRowSelectedStyle, enableRowActions } =
-        props.rowOptions;
+    const {
+        rowActions,
+        enableRowSelectedStyle,
+        enableRowActions,
+        enableRowTitle,
+    } = props.rowOptions;
 
     const enableRowAction = () => {
         if (rowActions === null || rowActions === undefined) return false;
@@ -33,6 +37,12 @@ export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
 
         const action = rowActions?.find(x => x.isRowActionOnClick);
         action?.onClick(event, row.original);
+    };
+
+    const makeRowTitle = (cell: Cell<any, any>) => {
+        if (!enableRowTitle) return undefined;
+
+        return cell?.value;
     };
 
     return (
@@ -55,7 +65,7 @@ export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
                                 <>
                                     <TableCell
                                         align={cell.column['align'] ?? 'left'}
-                                        title={`${cell?.value ?? ''}`}
+                                        title={makeRowTitle(cell)}
                                         {...cell.getCellProps({
                                             key: `table-cell${index}`,
                                         })}
