@@ -1,11 +1,15 @@
 import { PaginationModel, SearchModel } from '@/core/models';
 
 export default class SearchResponseModel<T> {
-    searchModel: SearchModel;
+    searchModel?: SearchModel;
     page: PaginationModel;
     data: T;
 
-    constructor(data: T, page: PaginationModel, searchModel: SearchModel) {
+    constructor(
+        data: T,
+        page: PaginationModel,
+        searchModel = undefined as SearchModel | undefined,
+    ) {
         this.data = data;
         this.page = page;
         this.searchModel = searchModel;
@@ -15,7 +19,6 @@ export default class SearchResponseModel<T> {
         return new SearchResponseModel<any>(
             [] as any[],
             new PaginationModel({}),
-            new SearchModel('', '', []),
         );
     }
 }
