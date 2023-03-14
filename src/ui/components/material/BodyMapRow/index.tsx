@@ -42,32 +42,38 @@ export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
     const makeRowTitle = (cell: Cell<any, any>) => {
         if (!enableRowTitle) return undefined;
 
+        const cellColumn = cell.column as any;
+
+        if (cellColumn.renderTitleCustom !== undefined) {
+            return cellColumn.renderTitleCustom(cell.row?.original);
+        }
+
         return cell?.value;
     };
 
     return (
         <>
-            {rows.map((row, index) => {
+            {rows.map((row, indexRow) => {
                 prepareRow(row);
                 return (
                     <TableRowContainer
                         {...row.getRowProps()}
-                        key={`body-rows-${index}`}
+                        key={`body-rows-${indexRow}`}
                         data-id={row.id}
-                        data-index={index}
+                        data-index={indexRow}
                         data-is-selected={row.isSelected}
                         data-enable-row-selected-style={enableRowSelectedStyle}
                         data-enable-row-action={enableRowAction()}
                         onClick={e => handleOnClick(e, row)}
                     >
-                        {row.cells.map((cell, index) => {
+                        {row.cells.map((cell, indexCell) => {
                             return (
                                 <>
                                     <TableCell
                                         align={cell.column['align'] ?? 'left'}
                                         title={makeRowTitle(cell)}
                                         {...cell.getCellProps({
-                                            key: `table-cell${index}`,
+                                            key: `table-cell${indexCell}`,
                                         })}
                                         style={{
                                             width: cell.column.width ?? '1%',
@@ -80,9 +86,10 @@ export default function BodyMapRow(props: BodyMapRowProps): JSX.Element {
                                     </TableCell>
                                     {enableRowActions && (
                                         <BodyCellAction
-                                            key={`body-cell-action-${index}`}
+                                            key={`body-cell-action-${indexCell}`}
                                             isLastCell={
-                                                row.cells.length === index + 1
+                                                row.cells.length ===
+                                                indexCell + 1
                                             }
                                             actions={rowActions}
                                             rowData={cell.row?.original}
