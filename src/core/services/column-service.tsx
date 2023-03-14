@@ -18,6 +18,7 @@ export default class ColumnService {
                 width: column.width,
                 maxWidth: column.maxWidth,
                 align: column.align,
+                renderTitleCustom: column.renderTitleCustom,
             } as Column;
         });
 

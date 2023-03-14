@@ -1,6 +1,6 @@
 import React from 'react';
 import { AlignType } from './align-type';
-import { RenderType } from './render-type';
+import { RenderType, RenderTypeTitle } from './render-type';
 
 export default class ColumnModel<T> {
     name: string;
@@ -10,6 +10,7 @@ export default class ColumnModel<T> {
     render: RenderType<T>;
     width?: any;
     maxWidth?: any;
+    renderTitleCustom?: RenderTypeTitle<T>;
 
     constructor(
         name: string,
@@ -28,6 +29,7 @@ export default class ColumnModel<T> {
         this.width = width;
         this.maxWidth = maxWidth;
         this.render = (value: any) => <>{value}</>;
+        this.renderTitleCustom = undefined;
     }
 
     static build<T>(name: string, property: string): ColumnModel<T> {
@@ -36,6 +38,13 @@ export default class ColumnModel<T> {
 
     withRender(render: RenderType<T>): ColumnModel<T> {
         this.render = render;
+        return this;
+    }
+
+    withRenderTitleCustom(
+        renderTitleCustom: RenderTypeTitle<T>,
+    ): ColumnModel<T> {
+        this.renderTitleCustom = renderTitleCustom;
         return this;
     }
 }
