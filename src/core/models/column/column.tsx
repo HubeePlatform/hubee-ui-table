@@ -11,6 +11,7 @@ export default class ColumnModel<T> {
     width?: any;
     maxWidth?: any;
     renderTitleCustom?: RenderTypeTitle<T>;
+    renderHeaderColumnCustom?: React.ReactNode;
 
     constructor(
         name: string,
@@ -20,6 +21,7 @@ export default class ColumnModel<T> {
             align = 'left' as AlignType,
             width = undefined as any,
             maxWidth = undefined as any,
+            renderHeaderColumnCustom = undefined as any,
         },
     ) {
         this.name = name;
@@ -30,6 +32,7 @@ export default class ColumnModel<T> {
         this.maxWidth = maxWidth;
         this.render = (value: any) => <>{value}</>;
         this.renderTitleCustom = undefined;
+        this.renderHeaderColumnCustom = renderHeaderColumnCustom;
     }
 
     static build<T>(name: string, property: string): ColumnModel<T> {
