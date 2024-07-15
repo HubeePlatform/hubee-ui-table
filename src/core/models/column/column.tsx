@@ -21,7 +21,7 @@ export default class ColumnModel<T> {
             align = 'left' as AlignType,
             width = undefined as any,
             maxWidth = undefined as any,
-            renderHeaderColumnCustom = undefined as any,
+            renderHeaderColumnCustom = <></>,
         },
     ) {
         this.name = name;
