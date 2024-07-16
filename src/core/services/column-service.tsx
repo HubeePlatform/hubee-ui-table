@@ -5,6 +5,7 @@ import IndeterminateCheckbox from '@/ui/components/material/TableCellSelect';
 import React from 'react';
 import { Column } from 'react-table';
 import TableRowSelectHelper from '../helpers/table-row-select-helper';
+import _ from 'lodash';
 
 export default class ColumnService {
     static makeModelToColumn(value: ColumnModel<any>[]): Column<any>[] {
@@ -17,7 +18,9 @@ export default class ColumnService {
                         </>
                     );
                 },
-                accessor: column.property,
+                accessor: _.isEmpty(column.property)
+                    ? column.name
+                    : column.property,
                 disableSortBy: !column.sorting,
                 Cell: v => column.render(v.value, v.row.original),
                 disableResizing: false,
