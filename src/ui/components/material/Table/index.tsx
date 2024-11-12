@@ -76,6 +76,7 @@ export default function MaterialTable(props: TableProps) {
         classNameRoot,
         globalFilterWithContainerBorder,
         borderInCell,
+        enableStickyHeader,
     } = tableProps.styleOptions as TableStyleOptions;
 
     const {
@@ -623,6 +624,7 @@ export default function MaterialTable(props: TableProps) {
                 <MaUTable
                     {...getTableProps()}
                     className={`material-table is-loading-${responseState.isLoading}`}
+                    stickyHeader={enableStickyHeader}
                 >
                     <TableHead className="material-table-head">
                         <TheadMapRow

@@ -8,6 +8,7 @@ export interface TableStyleOptions {
     withZebraStriped?: boolean;
     classNameRoot?: string;
     borderInCell?: boolean;
+    enableStickyHeader?: boolean;
 }
 
 export const StyleOptionsDefault = (options?: TableStyleOptions) => {
@@ -21,5 +22,6 @@ export const StyleOptionsDefault = (options?: TableStyleOptions) => {
         withTableInfoResult: options?.withTableInfoResult ?? true,
         withZebraStriped: options?.withZebraStriped ?? false,
         borderInCell: options?.borderInCell ?? false,
+        enableStickyHeader: options?.enableStickyHeader ?? false,
     } as TableStyleOptions;
 };
